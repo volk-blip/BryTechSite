@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { motion } from 'motion/react';
 import { Language, TRANSLATIONS } from '../i18n/translations';
 import { BryTechVisualArtwork } from './BryTechVisualArtwork';
@@ -17,6 +17,10 @@ import {
   Award,
   Briefcase,
   Workflow,
+  Code2,
+  Terminal,
+  Bot,
+  Users,
 } from 'lucide-react';
 import { ActivePageView } from './Navbar';
 
@@ -25,6 +29,55 @@ interface AboutCompanyPageProps {
   onSelectPage: (page: ActivePageView) => void;
   onOpenPortal: () => void;
 }
+
+const LEADERSHIP_SECTION_COPY: Record<
+  Language,
+  {
+    badge: string;
+    title: string;
+    subtitle: string;
+    allFoundersTab: string;
+    borisTab: string;
+    danilTab: string;
+  }
+> = {
+  en: {
+    badge: 'EXECUTIVE LEADERSHIP & SYSTEM ARCHITECTS',
+    title: 'The Minds Behind BryTech',
+    subtitle:
+      'Bridging 15+ years of enterprise business leadership and sales operations with modern full-stack software development and artificial intelligence engineering.',
+    allFoundersTab: 'Both Leaders',
+    borisTab: 'Boris Brygin · Founder',
+    danilTab: 'Danil Brygin · Co-Founder & CTO',
+  },
+  ru: {
+    badge: 'РУКОВОДСТВО И АРХИТЕКТОРЫ СИСТЕМ',
+    title: 'Основатели Компании BryTech',
+    subtitle:
+      'Сплав более 15 лет корпоративного опыта в управлении бизнесом и продажами с передовой разработкой программного обеспечения и AI-автоматизацией.',
+    allFoundersTab: 'Все Руководители',
+    borisTab: 'Борис Брыгин · Основатель',
+    danilTab: 'Данил Брыгин · Сооснователь & CTO',
+  },
+  uk: {
+    badge: 'КЕРІВНИЦТВО ТА АРХІТЕКТОРИ СИСТЕМ',
+    title: 'Засновники Компанії BryTech',
+    subtitle:
+      'Поєднання понад 15 років корпоративного досвіду в управлінні продажами з передовою розробкою програмного забезпечення та AI-автоматизацією.',
+    allFoundersTab: 'Усі Засновники',
+    borisTab: 'Борис Бригін · Засновник',
+    danilTab: 'Даніл Бригін · Співзасновник & CTO',
+  },
+  he: {
+    badge: 'הנהגת החברה וארכיטקטורת מערכות',
+    title: 'המובילים מאחורי BryTech',
+    subtitle:
+      'שילוב של יותר מ-15 שנות ניסיון בהובלת מערכות ארגוניות וניהול מכירות יחד עם הנדסת תוכנה מתקדמת ופיתוח מערכות AI חכמות.',
+    allFoundersTab: 'שני המייסדים',
+    borisTab: 'בוריס בריגין · מייסד',
+    danilTab: 'דניל בריגין · מייסד-שותף ו-CTO',
+  },
+};
 
 const FOUNDER_BIO_COPY: Record<
   Language,
@@ -132,6 +185,116 @@ const FOUNDER_BIO_COPY: Record<
       { value: 'אפס חסמים', label: 'תפעול מהיר, חלק ויעיל יותר' },
     ],
     ctaConsult: 'שיחה ישירה עם בוריס',
+    ctaConfigure: 'אפיון המערכת שלך',
+  },
+};
+
+const DANIL_BIO_COPY: Record<
+  Language,
+  {
+    kicker: string;
+    roleBadge: string;
+    greeting: string;
+    paragraph1: string;
+    paragraph2: string;
+    paragraph3: string;
+    quoteHighlight: string;
+    founderName: string;
+    founderTitle: string;
+    stats: {
+      value: string;
+      label: string;
+    }[];
+    ctaConsult: string;
+    ctaConfigure: string;
+  }
+> = {
+  en: {
+    kicker: 'CO-FOUNDER & CHIEF TECHNOLOGY OFFICER',
+    roleBadge: 'Co-Founder of BryTech · AI Software Architecture & Engineering',
+    greeting: 'Hi, I’m Danil Brygin, Co-Founder & CTO of BryTech.',
+    paragraph1:
+      'At 27, I lead the technical architecture and engineering direction at BryTech. With a strong background in software engineering and high-performance coding, I specialize in architecting custom, AI-powered software solutions engineered to automate complex business workflows with surgical precision.',
+    paragraph2:
+      'My core focus is turning ambitious operational requirements into lightning-fast, dependable, and scalable code. Whether creating autonomous multi-step AI agents, low-latency LLM pipelines, or engineering custom backend databases, I make sure our technology works seamlessly for you without bloat or fragility.',
+    paragraph3:
+      'Technology should never be complicated for the sake of complexity. At BryTech, we build resilient, high-speed software infrastructure that eliminates manual busywork, accelerates team output, and gives growing enterprises the competitive edge of cutting-edge artificial intelligence.',
+    quoteHighlight:
+      'True technological power comes from clean, purpose-built code — we build AI software that works reliably in the real world every single second.',
+    founderName: 'Danil Brygin',
+    founderTitle: 'Co-Founder & CTO of BryTech',
+    stats: [
+      { value: 'AI-Powered', label: 'Autonomous Software & Custom Bot Pipelines' },
+      { value: 'Full-Stack Core', label: 'High-Performance Cloud & Database Systems' },
+      { value: '27 y/o Innovator', label: 'Next-Gen AI Engineering & Rapid Execution' },
+    ],
+    ctaConsult: 'Talk Tech with Danil',
+    ctaConfigure: 'Explore System Architecture',
+  },
+  ru: {
+    kicker: 'СООСНОВАТЕЛЬ И ТЕХНИЧЕСКИЙ ДИРЕКТОР',
+    roleBadge: 'Сооснователь BryTech · AI-Разработка и Архитектура ПО',
+    greeting: 'Привет, я Данил Брыгин, сооснователь и CTO BryTech.',
+    paragraph1:
+      'В свои 27 лет я руковожу технологическим направлением и разработкой архитектуры в BryTech. Имея глубокую инженерную базу в программировании и разработке программного обеспечения, я специализируюсь на создании кастомных систем на базе искусственного интеллекта, решающих сложные бизнес-задачи с максимальной точностью.',
+    paragraph2:
+      'Мой главный фокус — превращать масштабные операционные требования бизнеса в быстрый, надежный и масштабируемый код. Будь то разработка автономных AI-агентов, интеграция нейросетевых пайплайнов или проектирование архитектуры баз данных — я слежу за тем, чтобы технологии работали безотказно и без перегруженности.',
+    paragraph3:
+      'Технологии не должны быть сложными ради самой сложности. В BryTech мы строим устойчивую программную инфраструктуру, которая освобождает бизнес от рутины, ускоряет работу сотрудников и даёт компаниям мощное конкурентное преимущество современных AI-технологий.',
+    quoteHighlight:
+      'Истинная сила технологий — в чистом, специализированном коде: мы создаем AI-решения, которые надежно работают в реальном бизнесе каждую секунду.',
+    founderName: 'Danil Brygin',
+    founderTitle: 'Сооснователь & CTO BryTech',
+    stats: [
+      { value: 'AI-Системы', label: 'Автономные Агенты и Нейросетевые Пайплайны' },
+      { value: 'Full-Stack', label: 'Высоконагруженная Облачная Архитектура' },
+      { value: 'Инновации 27', label: 'Современный Стек и AI-Инженерия' },
+    ],
+    ctaConsult: 'Обсудить Стек с Данилом',
+    ctaConfigure: 'Собрать Свою Систему',
+  },
+  uk: {
+    kicker: 'СПІВЗАСНОВНИК ТА ТЕХНІЧНИЙ ДИРЕКТОР',
+    roleBadge: 'Співзасновник BryTech · AI-Розробка та Архітектура ПЗ',
+    greeting: 'Привіт, я Даніл Бригін, співзасновник та CTO BryTech.',
+    paragraph1:
+      'У свої 27 років я керую технологічним напрямом та розробкою архітектури в BryTech. Маючи ґрунтовну інженерну базу в програмуванні та розробці програмного забезпечення, я спеціалізуюся на створенні кастомних систем на базі штучного інтелекту, що оптимізують бізнес-процеси з хірургічною точністю.',
+    paragraph2:
+      'Мій головний пріоритет — перетворювати масштабні операційні потреби бізнесу на швидкий, надійний та масштабований код. Від розробки автономних AI-агентів та інтеграції мовних моделей до проектування баз даних — я дбаю про те, щоб технології працювали бездоганно без технічного боргу.',
+    paragraph3:
+      'Технології не мають бути складними заради самої складності. У BryTech ми будуємо надійну програмну інфраструктуру, яка усуває щоденну рутину, прискорює операції та відкриває компаніям потужні переваги передового штучного інтелекту.',
+    quoteHighlight:
+      'Справжня сила технологій — у чистому, точно спроєктованому коді: ми створюємо AI-рішення, які безвідмовно працюють у реальному бізнесі щомиті.',
+    founderName: 'Danil Brygin',
+    founderTitle: 'Співзасновник & CTO BryTech',
+    stats: [
+      { value: 'AI-Системи', label: 'Автономні Агенти та Нейропайплайни' },
+      { value: 'Full-Stack', label: 'Високонадійна Хмарна Архітектура' },
+      { value: 'Інновації 27', label: 'Сучасний Інженерний Стек та AI' },
+    ],
+    ctaConsult: 'Обговорити Стек з Данілом',
+    ctaConfigure: 'Створити Свою Систему',
+  },
+  he: {
+    kicker: 'מייסד-שותף ומנהל טכנולוגיות ראשי (CTO)',
+    roleBadge: 'מייסד-שותף BryTech · פיתוח תוכנה וארכיטקטורת AI',
+    greeting: 'היי, אני דניל בריגין (Danil Brygin), מייסד-שותף ו-CTO ב-BryTech.',
+    paragraph1:
+      'בגיל 27, אני מוביל את הארכיטקטורה הטכנולוגית והפיתוח ההנדסי ב-BryTech. עם רקע חזק בכתיבת קוד ובפיתוח תוכנה מתקדמת, אני מתמחה בבניית מערכות תוכנה מבוססות AI בהתאמה אישית שנועדו להפוך תהליכי עבודה עסקיים מורכבים לאוטומטיים ומדויקים להפליא.',
+    paragraph2:
+      'המיקוד המרכזי שלי הוא תרגום דרישות תפעוליות שאפתניות לקוד מהיר, אמין וניתן להרחבה. החל מבניית סוכני AI אוטונומיים, הטמעת מודלי שפה (LLM) ועד ארכיטקטורת מסדי נתונים מותאמת — אני מבטיח שהטכנולוגיה תעבוד באופן מושלם ללא סרבול.',
+    paragraph3:
+      'טכנולוגיה לא צריכה להיות מורכבת לשם המורכבות בלבד. ב-BryTech אנחנו בונים תשתית תוכנה יציבה ומהירה שמחסלת עבודה ידנית מתישה, מאיצה את ביצועי הצוות ומעניקה לעסקים בצמיחה יתרון תחרותי מובהק באמצעות בינה מלאכותית פורצת דרך.',
+    quoteHighlight:
+      'עוצמה טכנולוגית אמיתית נובעת מקוד נקי ומדויק — אנחנו מפתחים פתרונות AI שעובדים באופן יציב ומוכח בעולם האמיתי בכל שנייה.',
+    founderName: 'Danil Brygin',
+    founderTitle: 'מייסד-שותף ו-CTO ב-BryTech',
+    stats: [
+      { value: 'AI Core', label: 'סוכני תוכנה אוטונומיים ומודלי שפה מתקדמים' },
+      { value: 'Full-Stack', label: 'ארכיטקטורת ענן ומסדי נתונים בעלי ביצועים גבוהים' },
+      { value: 'בן 27', label: 'חדשנות טכנולוגית ופיתוח מבוסס AI' },
+    ],
+    ctaConsult: 'שיחה טכנולוגית עם דניל',
     ctaConfigure: 'אפיון המערכת שלך',
   },
 };
@@ -481,7 +644,10 @@ export const AboutCompanyPage: React.FC<AboutCompanyPageProps> = ({
 }) => {
   const t = TRANSLATIONS[lang];
   const copy = ABOUT_VISION_COPY[lang];
-  const bio = FOUNDER_BIO_COPY[lang];
+  const borisBio = FOUNDER_BIO_COPY[lang];
+  const danilBio = DANIL_BIO_COPY[lang];
+  const leadershipCopy = LEADERSHIP_SECTION_COPY[lang];
+  const [activeLeaderTab, setActiveLeaderTab] = useState<'both' | 'boris' | 'danil'>('both');
 
   return (
     <section
@@ -514,139 +680,332 @@ export const AboutCompanyPage: React.FC<AboutCompanyPageProps> = ({
           </p>
         </motion.div>
 
-        {/* FOUNDER BIO & EXECUTIVE PORTRAIT SPOTLIGHT (Boris Brygin) */}
-        <motion.div
-          initial={{ opacity: 0, y: 32 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 0.15 }}
-          transition={{ duration: 0.75, ease: [0.16, 1, 0.3, 1] }}
-          className="relative rounded-[40px] bg-gradient-to-br from-[#f5f5f7] via-white to-[#eef4fc] p-6 sm:p-10 lg:p-14 xl:p-16 border border-black/[0.07] shadow-[0_28px_80px_rgba(0,0,0,0.06)] overflow-hidden"
-        >
-          {/* Ambient Apple-style sapphire & gold soft glow */}
-          <div className="pointer-events-none absolute -top-36 -left-36 w-96 h-96 rounded-full bg-[#0071e3]/[0.07] blur-3xl" />
-          <div className="pointer-events-none absolute -bottom-36 -right-36 w-96 h-96 rounded-full bg-[#d4af37]/[0.08] blur-3xl" />
+        {/* ==================================================================== */}
+        {/* EXECUTIVE LEADERSHIP SPOTLIGHT: BORIS BRYGIN & DANIL BRYGIN          */}
+        {/* ==================================================================== */}
+        <div className="space-y-12">
+          {/* Section Header with Quick Filter Switcher */}
+          <div className="text-center max-w-3xl mx-auto space-y-4">
+            <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#0071e3]/10 text-[#0071e3] text-xs font-semibold tracking-tight">
+              <Users className="w-3.5 h-3.5" />
+              <span>{leadershipCopy.badge}</span>
+            </span>
+            <h2 className="text-3xl sm:text-4xl lg:text-[42px] font-bold tracking-[-0.03em] text-[#1d1d1f]">
+              {leadershipCopy.title}
+            </h2>
+            <p className="text-base sm:text-lg text-[#6e6e73] leading-relaxed">
+              {leadershipCopy.subtitle}
+            </p>
 
-          <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-center">
-            {/* Left Column: Clean Portrait on Apple Studio Filter (No top menu, refined bottom nameplate) */}
-            <div className="lg:col-span-5 flex flex-col">
-              <div className="relative group rounded-[32px] overflow-hidden bg-[#0e1726] border border-black/[0.08] shadow-[0_24px_60px_rgba(0,40,95,0.18)] aspect-[4/5] w-full max-w-[520px] mx-auto">
-                {/* Founder Portrait Image permanently on Apple Studio Filter */}
-                <img
-                  src="/assets/aistudio/Gemini_Generated_Image_vhds4cvhds4cvhds_3072b664.jpg"
-                  alt="Boris Brygin — Founder of BryTech"
-                  className="w-full h-full object-cover object-[center_18%] transition-transform duration-700 group-hover:scale-[1.02] contrast-[1.06] saturate-[0.90] brightness-[1.01]"
-                />
-
-                {/* Subtle Apple Studio Vignette & Editorial Lower-Third Lighting */}
-                <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#080f1a]/85 via-[#0b1526]/15 to-transparent" />
-
-                {/* Refined Executive Nameplate — Only Name & Title */}
-                <div className="absolute bottom-5 left-5 right-5 rounded-2xl bg-[#0b111a]/75 backdrop-blur-2xl border border-white/[0.14] px-6 py-5 text-white shadow-[0_16px_40px_rgba(0,0,0,0.35)]">
-                  <div className="flex items-center justify-between gap-4">
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-2.5">
-                        <span className="w-1.5 h-1.5 rounded-full bg-[#0071e3]" />
-                        <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-white/70">
-                          {bio.founderTitle}
-                        </span>
-                      </div>
-                      <div className="text-xl sm:text-2xl font-bold tracking-[-0.02em] text-white leading-tight">
-                        {bio.founderName}
-                      </div>
-                    </div>
-
-                    <BryTechLogo
-                      theme="dark-surface"
-                      size="sm"
-                      showWordmark={false}
-                      className="opacity-95"
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Right Column: Boris Brygin Bio & Executive Story */}
-            <div className="lg:col-span-7 space-y-6">
-              <div className="space-y-2">
-                <div className="text-xs font-bold uppercase tracking-[0.14em] text-[#0071e3]">
-                  {bio.kicker}
-                </div>
-                <div className="text-xs sm:text-sm text-[#6e6e73] font-medium">
-                  {bio.roleBadge}
-                </div>
-              </div>
-
-              <h2 className="text-3xl sm:text-4xl lg:text-[44px] font-bold tracking-[-0.03em] text-[#1d1d1f] leading-[1.1]">
-                {bio.greeting}
-              </h2>
-
-              {/* Main 3 Bio Paragraphs */}
-              <div className="space-y-4 text-base sm:text-lg text-[#424245] leading-relaxed">
-                <p className="font-medium text-[#1d1d1f]">{bio.paragraph1}</p>
-                <p>{bio.paragraph2}</p>
-                <p>{bio.paragraph3}</p>
-              </div>
-
-              {/* Editorial Pull-Quote Callout */}
-              <div className="rounded-2xl bg-white/90 border border-[#0071e3]/15 p-5 sm:p-6 shadow-sm flex items-start gap-4">
-                <div className="w-10 h-10 rounded-xl bg-[#0071e3]/10 text-[#0071e3] flex items-center justify-center shrink-0 mt-0.5">
-                  <Quote className="w-5 h-5" />
-                </div>
-                <div className="space-y-1.5">
-                  <p className="text-sm sm:text-base font-semibold text-[#1d1d1f] italic leading-snug">
-                    “{bio.quoteHighlight}”
-                  </p>
-                  <div className="text-xs font-semibold text-[#6e6e73]">
-                    — {bio.founderName}, {bio.founderTitle}
-                  </div>
-                </div>
-              </div>
-
-              {/* 3 Executive Metrics Strip */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5 pt-1">
-                {bio.stats.map((st, i) => {
-                  const StatIcon = i === 0 ? Award : i === 1 ? Workflow : Briefcase;
-                  return (
-                    <div
-                      key={st.label}
-                      className="rounded-2xl bg-white p-4 border border-black/[0.06] shadow-xs flex flex-col justify-between"
-                    >
-                      <div className="flex items-center justify-between mb-1.5">
-                        <span className="text-xl sm:text-2xl font-bold text-[#0071e3] tracking-tight">
-                          {st.value}
-                        </span>
-                        <StatIcon className="w-4 h-4 text-[#86868b]" />
-                      </div>
-                      <span className="text-xs font-medium text-[#6e6e73] leading-snug">
-                        {st.label}
-                      </span>
-                    </div>
-                  );
-                })}
-              </div>
-
-              {/* Founder Direct CTAs */}
-              <div className="pt-3 flex flex-wrap items-center gap-3.5">
-                <button
-                  type="button"
-                  onClick={() => onSelectPage('contact')}
-                  className="px-7 py-3.5 rounded-full bg-[#0071e3] hover:bg-[#0077ed] text-white text-sm font-semibold inline-flex items-center gap-2 transition-all cursor-pointer shadow-[0_10px_25px_rgba(0,113,227,0.25)]"
-                >
-                  <span>{bio.ctaConsult}</span>
-                  <ArrowRight className="w-4 h-4" />
-                </button>
-                <button
-                  type="button"
-                  onClick={() => onSelectPage('pricing')}
-                  className="px-7 py-3.5 rounded-full bg-white hover:bg-[#ebebf0] text-[#1d1d1f] text-sm font-semibold border border-black/[0.08] transition-colors cursor-pointer"
-                >
-                  {bio.ctaConfigure}
-                </button>
-              </div>
+            {/* Quick Filter Switcher */}
+            <div className="pt-2 flex flex-wrap items-center justify-center gap-2">
+              <button
+                type="button"
+                onClick={() => setActiveLeaderTab('both')}
+                className={`px-5 py-2 rounded-full text-xs font-semibold transition-all cursor-pointer ${
+                  activeLeaderTab === 'both'
+                    ? 'bg-[#1d1d1f] text-white shadow-sm'
+                    : 'bg-[#f5f5f7] hover:bg-[#e8e8ed] text-[#6e6e73]'
+                }`}
+              >
+                {leadershipCopy.allFoundersTab}
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveLeaderTab('boris')}
+                className={`px-5 py-2 rounded-full text-xs font-semibold transition-all cursor-pointer ${
+                  activeLeaderTab === 'boris'
+                    ? 'bg-[#0071e3] text-white shadow-sm'
+                    : 'bg-[#f5f5f7] hover:bg-[#e8e8ed] text-[#6e6e73]'
+                }`}
+              >
+                {leadershipCopy.borisTab}
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveLeaderTab('danil')}
+                className={`px-5 py-2 rounded-full text-xs font-semibold transition-all cursor-pointer ${
+                  activeLeaderTab === 'danil'
+                    ? 'bg-[#0071e3] text-white shadow-sm'
+                    : 'bg-[#f5f5f7] hover:bg-[#e8e8ed] text-[#6e6e73]'
+                }`}
+              >
+                {leadershipCopy.danilTab}
+              </button>
             </div>
           </div>
-        </motion.div>
+
+          {/* CARD 1: BORIS BRYGIN (FOUNDER & EXECUTIVE LEADERSHIP) */}
+          {(activeLeaderTab === 'both' || activeLeaderTab === 'boris') && (
+            <motion.div
+              initial={{ opacity: 0, y: 32 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, amount: 0.15 }}
+              transition={{ duration: 0.75, ease: [0.16, 1, 0.3, 1] }}
+              className="relative rounded-[40px] bg-gradient-to-br from-[#f5f5f7] via-white to-[#eef4fc] p-6 sm:p-10 lg:p-14 xl:p-16 border border-black/[0.07] shadow-[0_28px_80px_rgba(0,0,0,0.06)] overflow-hidden"
+            >
+              {/* Ambient Apple-style sapphire & gold soft glow */}
+              <div className="pointer-events-none absolute -top-36 -left-36 w-96 h-96 rounded-full bg-[#0071e3]/[0.07] blur-3xl" />
+              <div className="pointer-events-none absolute -bottom-36 -right-36 w-96 h-96 rounded-full bg-[#d4af37]/[0.08] blur-3xl" />
+
+              <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-center">
+                {/* Left Column: Boris Portrait on Apple Studio Filter */}
+                <div className="lg:col-span-5 flex flex-col">
+                  <div className="relative group rounded-[32px] overflow-hidden bg-[#0e1726] border border-black/[0.08] shadow-[0_24px_60px_rgba(0,40,95,0.18)] aspect-[4/5] w-full max-w-[520px] mx-auto">
+                    <img
+                      src="/assets/aistudio/Gemini_Generated_Image_vhds4cvhds4cvhds_3072b664.jpg"
+                      alt="Boris Brygin — Founder of BryTech"
+                      className="w-full h-full object-cover object-[center_18%] transition-transform duration-700 group-hover:scale-[1.02] contrast-[1.06] saturate-[0.90] brightness-[1.01]"
+                    />
+
+                    {/* Subtle Apple Studio Vignette & Editorial Lower-Third Lighting */}
+                    <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#080f1a]/85 via-[#0b1526]/15 to-transparent" />
+
+                    {/* Refined Executive Nameplate — Only Name & Title */}
+                    <div className="absolute bottom-5 left-5 right-5 rounded-2xl bg-[#0b111a]/75 backdrop-blur-2xl border border-white/[0.14] px-6 py-5 text-white shadow-[0_16px_40px_rgba(0,0,0,0.35)]">
+                      <div className="flex items-center justify-between gap-4">
+                        <div className="space-y-1">
+                          <div className="flex items-center gap-2.5">
+                            <span className="w-1.5 h-1.5 rounded-full bg-[#0071e3]" />
+                            <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-white/70">
+                              {borisBio.founderTitle}
+                            </span>
+                          </div>
+                          <div className="text-xl sm:text-2xl font-bold tracking-[-0.02em] text-white leading-tight">
+                            {borisBio.founderName}
+                          </div>
+                        </div>
+
+                        <BryTechLogo
+                          theme="dark-surface"
+                          size="sm"
+                          showWordmark={false}
+                          className="opacity-95"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Right Column: Boris Brygin Bio & Executive Story */}
+                <div className="lg:col-span-7 space-y-6">
+                  <div className="space-y-2">
+                    <div className="text-xs font-bold uppercase tracking-[0.14em] text-[#0071e3]">
+                      {borisBio.kicker}
+                    </div>
+                    <div className="text-xs sm:text-sm text-[#6e6e73] font-medium">
+                      {borisBio.roleBadge}
+                    </div>
+                  </div>
+
+                  <h2 className="text-3xl sm:text-4xl lg:text-[44px] font-bold tracking-[-0.03em] text-[#1d1d1f] leading-[1.1]">
+                    {borisBio.greeting}
+                  </h2>
+
+                  {/* Main 3 Bio Paragraphs */}
+                  <div className="space-y-4 text-base sm:text-lg text-[#424245] leading-relaxed">
+                    <p className="font-medium text-[#1d1d1f]">{borisBio.paragraph1}</p>
+                    <p>{borisBio.paragraph2}</p>
+                    <p>{borisBio.paragraph3}</p>
+                  </div>
+
+                  {/* Editorial Pull-Quote Callout */}
+                  <div className="rounded-2xl bg-white/90 border border-[#0071e3]/15 p-5 sm:p-6 shadow-sm flex items-start gap-4">
+                    <div className="w-10 h-10 rounded-xl bg-[#0071e3]/10 text-[#0071e3] flex items-center justify-center shrink-0 mt-0.5">
+                      <Quote className="w-5 h-5" />
+                    </div>
+                    <div className="space-y-1.5">
+                      <p className="text-sm sm:text-base font-semibold text-[#1d1d1f] italic leading-snug">
+                        “{borisBio.quoteHighlight}”
+                      </p>
+                      <div className="text-xs font-semibold text-[#6e6e73]">
+                        — {borisBio.founderName}, {borisBio.founderTitle}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* 3 Executive Metrics Strip */}
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5 pt-1">
+                    {borisBio.stats.map((st, i) => {
+                      const StatIcon = i === 0 ? Award : i === 1 ? Workflow : Briefcase;
+                      return (
+                        <div
+                          key={st.label}
+                          className="rounded-2xl bg-white p-4 border border-black/[0.06] shadow-xs flex flex-col justify-between"
+                        >
+                          <div className="flex items-center justify-between mb-1.5">
+                            <span className="text-xl sm:text-2xl font-bold text-[#0071e3] tracking-tight">
+                              {st.value}
+                            </span>
+                            <StatIcon className="w-4 h-4 text-[#86868b]" />
+                          </div>
+                          <span className="text-xs font-medium text-[#6e6e73] leading-snug">
+                            {st.label}
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  {/* Founder Direct CTAs */}
+                  <div className="pt-3 flex flex-wrap items-center gap-3.5">
+                    <button
+                      type="button"
+                      onClick={() => onSelectPage('contact')}
+                      className="px-7 py-3.5 rounded-full bg-[#0071e3] hover:bg-[#0077ed] text-white text-sm font-semibold inline-flex items-center gap-2 transition-all cursor-pointer shadow-[0_10px_25px_rgba(0,113,227,0.25)]"
+                    >
+                      <span>{borisBio.ctaConsult}</span>
+                      <ArrowRight className="w-4 h-4" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => onSelectPage('pricing')}
+                      className="px-7 py-3.5 rounded-full bg-white hover:bg-[#ebebf0] text-[#1d1d1f] text-sm font-semibold border border-black/[0.08] transition-colors cursor-pointer"
+                    >
+                      {borisBio.ctaConfigure}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          )}
+
+          {/* CARD 2: DANIL BRYGIN (CO-FOUNDER & CHIEF TECHNOLOGY OFFICER) */}
+          {(activeLeaderTab === 'both' || activeLeaderTab === 'danil') && (
+            <motion.div
+              initial={{ opacity: 0, y: 32 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, amount: 0.15 }}
+              transition={{ duration: 0.75, ease: [0.16, 1, 0.3, 1] }}
+              className="relative rounded-[40px] bg-gradient-to-br from-[#f5f5f7] via-white to-[#f0f6ff] p-6 sm:p-10 lg:p-14 xl:p-16 border border-black/[0.07] shadow-[0_28px_80px_rgba(0,0,0,0.06)] overflow-hidden"
+            >
+              {/* Ambient Apple-style cyan & sapphire soft glow */}
+              <div className="pointer-events-none absolute -top-36 -right-36 w-96 h-96 rounded-full bg-[#0071e3]/[0.08] blur-3xl" />
+              <div className="pointer-events-none absolute -bottom-36 -left-36 w-96 h-96 rounded-full bg-[#15BCDF]/[0.08] blur-3xl" />
+
+              <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-center">
+                {/* Left Column: Danil Portrait on Apple Studio Filter */}
+                <div className="lg:col-span-5 flex flex-col">
+                  <div className="relative group rounded-[32px] overflow-hidden bg-[#0e1726] border border-black/[0.08] shadow-[0_24px_60px_rgba(0,40,95,0.18)] aspect-[4/5] w-full max-w-[520px] mx-auto">
+                    {/* Portrait Image permanently on exact Apple Studio Filter */}
+                    <img
+                      src="/assets/aistudio/IMG_0904_62bab2d3.jpeg"
+                      alt="Danil Brygin — Co-Founder & CTO of BryTech"
+                      className="w-full h-full object-cover object-[center_15%] transition-transform duration-700 group-hover:scale-[1.02] contrast-[1.06] saturate-[0.90] brightness-[1.01]"
+                    />
+
+                    {/* Subtle Apple Studio Vignette & Editorial Lower-Third Lighting */}
+                    <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#080f1a]/85 via-[#0b1526]/15 to-transparent" />
+
+                    {/* Refined Executive Nameplate — Only Name & Title */}
+                    <div className="absolute bottom-5 left-5 right-5 rounded-2xl bg-[#0b111a]/75 backdrop-blur-2xl border border-white/[0.14] px-6 py-5 text-white shadow-[0_16px_40px_rgba(0,0,0,0.35)]">
+                      <div className="flex items-center justify-between gap-4">
+                        <div className="space-y-1">
+                          <div className="flex items-center gap-2.5">
+                            <span className="w-1.5 h-1.5 rounded-full bg-[#15BCDF]" />
+                            <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-white/70">
+                              {danilBio.founderTitle}
+                            </span>
+                          </div>
+                          <div className="text-xl sm:text-2xl font-bold tracking-[-0.02em] text-white leading-tight">
+                            {danilBio.founderName}
+                          </div>
+                        </div>
+
+                        <BryTechLogo
+                          theme="dark-surface"
+                          size="sm"
+                          showWordmark={false}
+                          className="opacity-95"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Right Column: Danil Brygin Bio & Technology Focus */}
+                <div className="lg:col-span-7 space-y-6">
+                  <div className="space-y-2">
+                    <div className="text-xs font-bold uppercase tracking-[0.14em] text-[#0071e3]">
+                      {danilBio.kicker}
+                    </div>
+                    <div className="text-xs sm:text-sm text-[#6e6e73] font-medium">
+                      {danilBio.roleBadge}
+                    </div>
+                  </div>
+
+                  <h2 className="text-3xl sm:text-4xl lg:text-[44px] font-bold tracking-[-0.03em] text-[#1d1d1f] leading-[1.1]">
+                    {danilBio.greeting}
+                  </h2>
+
+                  {/* Main 3 Bio Paragraphs */}
+                  <div className="space-y-4 text-base sm:text-lg text-[#424245] leading-relaxed">
+                    <p className="font-medium text-[#1d1d1f]">{danilBio.paragraph1}</p>
+                    <p>{danilBio.paragraph2}</p>
+                    <p>{danilBio.paragraph3}</p>
+                  </div>
+
+                  {/* Editorial Pull-Quote Callout */}
+                  <div className="rounded-2xl bg-white/90 border border-[#0071e3]/15 p-5 sm:p-6 shadow-sm flex items-start gap-4">
+                    <div className="w-10 h-10 rounded-xl bg-[#0071e3]/10 text-[#0071e3] flex items-center justify-center shrink-0 mt-0.5">
+                      <Code2 className="w-5 h-5" />
+                    </div>
+                    <div className="space-y-1.5">
+                      <p className="text-sm sm:text-base font-semibold text-[#1d1d1f] italic leading-snug">
+                        “{danilBio.quoteHighlight}”
+                      </p>
+                      <div className="text-xs font-semibold text-[#6e6e73]">
+                        — {danilBio.founderName}, {danilBio.founderTitle}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* 3 Tech Metrics Strip */}
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5 pt-1">
+                    {danilBio.stats.map((st, i) => {
+                      const StatIcon = i === 0 ? Bot : i === 1 ? Cpu : Terminal;
+                      return (
+                        <div
+                          key={st.label}
+                          className="rounded-2xl bg-white p-4 border border-black/[0.06] shadow-xs flex flex-col justify-between"
+                        >
+                          <div className="flex items-center justify-between mb-1.5">
+                            <span className="text-xl sm:text-2xl font-bold text-[#0071e3] tracking-tight">
+                              {st.value}
+                            </span>
+                            <StatIcon className="w-4 h-4 text-[#86868b]" />
+                          </div>
+                          <span className="text-xs font-medium text-[#6e6e73] leading-snug">
+                            {st.label}
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  {/* Danil Direct CTAs */}
+                  <div className="pt-3 flex flex-wrap items-center gap-3.5">
+                    <button
+                      type="button"
+                      onClick={() => onSelectPage('contact')}
+                      className="px-7 py-3.5 rounded-full bg-[#0071e3] hover:bg-[#0077ed] text-white text-sm font-semibold inline-flex items-center gap-2 transition-all cursor-pointer shadow-[0_10px_25px_rgba(0,113,227,0.25)]"
+                    >
+                      <span>{danilBio.ctaConsult}</span>
+                      <ArrowRight className="w-4 h-4" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => onSelectPage('pricing')}
+                      className="px-7 py-3.5 rounded-full bg-white hover:bg-[#ebebf0] text-[#1d1d1f] text-sm font-semibold border border-black/[0.08] transition-colors cursor-pointer"
+                    >
+                      {danilBio.ctaConfigure}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </div>
 
         {/* Vision & Unified System Showcase Card */}
         <motion.div

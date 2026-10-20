@@ -44,9 +44,9 @@ const SEO_METADATA: Record<Language, Record<ActivePageView, PageSeoMetadata>> = 
         'Build your custom business system scope with zero per-user monthly fees and 100% platform ownership. Get an instant tailored architecture estimate.',
     },
     about: {
-      title: 'About BryTech & Founder Boris Brygin | Custom Business Systems',
+      title: 'About BryTech Founders — Boris Brygin & Danil Brygin | Custom Business Systems',
       description:
-        'Founded by Boris Brygin with 15+ years of enterprise tech & sales leadership, BryTech brings enterprise-level efficiency directly to growing businesses.',
+        'Founded by Boris Brygin and co-founded by Danil Brygin (CTO, AI Software Architecture), BryTech engineers high-performance custom business systems and AI automation.',
     },
     contact: {
       title: 'Contact BryTech — Telegram, WhatsApp, Instagram & Direct Call',
@@ -91,9 +91,9 @@ const SEO_METADATA: Record<Language, Record<ActivePageView, PageSeoMetadata>> = 
         'Прозрачный расчет стоимости кастомной системы под ваши задачи — без ежемесячной платы за каждого пользователя и с полной собственностью на платформу.',
     },
     about: {
-      title: 'О Компании BryTech и Основателе Борисе Брыгине',
+      title: 'О Компании BryTech и Основателях Борисе и Даниле Брыгиных',
       description:
-        'Борис Брыгин (15+ лет опыта в enterprise-технологиях и управлении продажами) основал BryTech, чтобы создавать эффективные кастомные системы для растущего бизнеса.',
+        'Борис Брыгин и Данил Брыгин (CTO, AI-архитектура ПО) создают кастомные системы управления бизнесом и умную AI-автоматизацию для растущих компаний.',
     },
     contact: {
       title: 'Контакты BryTech — Telegram, WhatsApp, Instagram и Прямой Звонок',
@@ -138,9 +138,9 @@ const SEO_METADATA: Record<Language, Record<ActivePageView, PageSeoMetadata>> = 
         'Прозорий розрахунок кастомної системи під ваші модулі — 0$ абонплати за користувачів та 100% власність на платформу.',
     },
     about: {
-      title: 'Про Компанію BryTech та Засновника Бориса Бригіна',
+      title: 'Про Компанію BryTech та Засновників Бориса і Даніла Бригіних',
       description:
-        'Засновник BryTech Борис Бригін (15+ років досвіду в enterprise-технологіях та продажах) створює індивідуальні системи та ШІ-рішення для швидкого росту бізнесу.',
+        'Борис Бригін та Даніл Бригін (CTO, AI-архітектура ПЗ) розробляють індивідуальні системи управління бізнесом та ШІ-автоматизацію.',
     },
     contact: {
       title: 'Контакти BryTech — Telegram, WhatsApp, Instagram та Телефон',
@@ -185,9 +185,9 @@ const SEO_METADATA: Record<Language, Record<ActivePageView, PageSeoMetadata>> = 
         'תמחור שקוף לפי המודולים שהעסק שלך צריך — ללא דמי מנוי לכל עובד ובבעלות מלאה על המערכת.',
     },
     about: {
-      title: 'אודות BryTech והמייסד בוריס בריגין | מערכות עסקיות חכמות',
+      title: 'אודות BryTech והמייסדים בוריס ודניל בריגין | מערכות עסקיות חכמות',
       description:
-        'בוריס בריגין, מייסד BryTech (מעל 15 שנות ניסיון בהובלת טכנולוגיה ומכירות בארגונים גדולים), מתמחה בבניית מערכות מותאמות אישית ופתרונות AI לעסקים צומחים.',
+        'בוריס בריגין ודניל בריגין (CTO, פיתוח וארכיטקטורת AI) מובילים את BryTech בפיתוח מערכות עסקיות מותאמות אישית ואוטומציה מתקדמת.',
     },
     contact: {
       title: 'יצירת קשר עם BryTech — טלגרם, וואטסאפ, אינסטגרם וטלפון ישיר',

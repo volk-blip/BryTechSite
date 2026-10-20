@@ -104,6 +104,30 @@ export const AboutSection: React.FC<AboutSectionProps> = ({
                 <span>{t.about.ctaLearnMore}</span>
               </button>
             </div>
+
+            {onNavigateAboutPage && (
+              <div
+                onClick={onNavigateAboutPage}
+                className="pt-2 inline-flex items-center gap-3 cursor-pointer group"
+              >
+                <div className="flex -space-x-2">
+                  <img
+                    src="/assets/aistudio/Gemini_Generated_Image_vhds4cvhds4cvhds_3072b664.jpg"
+                    alt="Boris Brygin — Founder"
+                    className="w-9 h-9 rounded-full object-cover object-[center_18%] border-2 border-white contrast-[1.06] saturate-[0.90] brightness-[1.01] shadow-xs group-hover:scale-105 transition-transform"
+                  />
+                  <img
+                    src="/assets/aistudio/IMG_0904_62bab2d3.jpeg"
+                    alt="Danil Brygin — Co-Founder & CTO"
+                    className="w-9 h-9 rounded-full object-cover object-[center_15%] border-2 border-white contrast-[1.06] saturate-[0.90] brightness-[1.01] shadow-xs group-hover:scale-105 transition-transform"
+                  />
+                </div>
+                <div className="text-xs text-[#6e6e73] group-hover:text-[#0071e3] transition-colors leading-tight">
+                  <div className="font-semibold text-[#1d1d1f]">Boris Brygin &amp; Danil Brygin</div>
+                  <div className="text-[11px] text-[#86868b]">Founder &amp; Co-Founder / CTO · Executive Leadership</div>
+                </div>
+              </div>
+            )}
           </motion.div>
 
           <motion.div
