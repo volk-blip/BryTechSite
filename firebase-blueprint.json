@@ -1,0 +1,849 @@
+{
+  "entities": {
+    "AdminRecord": {
+      "title": "AdminRecord",
+      "description": "Trusted administrator role document keyed by user UID.",
+      "type": "object",
+      "properties": {
+        "uid": {
+          "type": "string",
+          "description": "Firebase Auth UID of the administrator.",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "role": {
+          "type": "string",
+          "description": "Administrator role designation.",
+          "enum": ["super_admin", "admin"],
+          "minLength": 5,
+          "maxLength": 32
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp when the admin record was created."
+        }
+      },
+      "required": ["uid", "role", "createdAt"]
+    },
+    "ClientAccount": {
+      "title": "ClientAccount",
+      "description": "Client business account metadata without PII (PII and login credentials are isolated in the private subcollection).",
+      "type": "object",
+      "properties": {
+        "ownerUid": {
+          "type": "string",
+          "description": "Firebase Auth UID of the account owner.",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "businessName": {
+          "type": "string",
+          "description": "Name of the client business.",
+          "minLength": 1,
+          "maxLength": 120
+        },
+        "contactName": {
+          "type": "string",
+          "description": "Display name of the primary contact person.",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "city": {
+          "type": "string",
+          "description": "City and country of the business.",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "market": {
+          "type": "string",
+          "description": "Operating market region.",
+          "enum": ["Ukraine", "Israel"],
+          "minLength": 6,
+          "maxLength": 20
+        },
+        "planName": {
+          "type": "string",
+          "description": "Name of the subscribed BryTech system bundle.",
+          "minLength": 1,
+          "maxLength": 160
+        },
+        "accountStatus": {
+          "type": "string",
+          "description": "Lifecycle status of the client account.",
+          "enum": ["onboarding", "active", "maintenance", "completed"],
+          "minLength": 6,
+          "maxLength": 20
+        },
+        "overallProgress": {
+          "type": "integer",
+          "description": "Aggregated completion percentage across all client products (0-100)."
+        },
+        "estimatedAgencyCostUsd": {
+          "type": "integer",
+          "description": "Estimated traditional agency cost in USD."
+        },
+        "brytechTotalPaidUsd": {
+          "type": "integer",
+          "description": "Total investment with BryTech in USD."
+        },
+        "assignedPm": {
+          "type": "string",
+          "description": "Assigned Kyiv project manager name.",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp of account creation."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp of last account update."
+        }
+      },
+      "required": [
+        "ownerUid",
+        "businessName",
+        "contactName",
+        "city",
+        "market",
+        "planName",
+        "accountStatus",
+        "overallProgress",
+        "estimatedAgencyCostUsd",
+        "brytechTotalPaidUsd",
+        "assignedPm",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "ClientPrivateInfo": {
+      "title": "ClientPrivateInfo",
+      "description": "Isolated PII contact, billing, and admin-provisioned client portal credentials.",
+      "type": "object",
+      "properties": {
+        "clientId": {
+          "type": "string",
+          "description": "Parent client document ID.",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "ownerUid": {
+          "type": "string",
+          "description": "Owner Firebase Auth UID.",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "email": {
+          "type": "string",
+          "format": "email",
+          "description": "Client business email address.",
+          "minLength": 3,
+          "maxLength": 120
+        },
+        "phone": {
+          "type": "string",
+          "description": "Client business phone / Telegram / WhatsApp number.",
+          "minLength": 3,
+          "maxLength": 60
+        },
+        "billingAddress": {
+          "type": "string",
+          "description": "Registered company billing address.",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "loginUsername": {
+          "type": "string",
+          "description": "Admin-assigned client portal username.",
+          "minLength": 2,
+          "maxLength": 80
+        },
+        "loginPassword": {
+          "type": "string",
+          "description": "Admin-assigned client portal access key.",
+          "minLength": 3,
+          "maxLength": 80
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Creation server timestamp."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Last update server timestamp."
+        }
+      },
+      "required": [
+        "clientId",
+        "ownerUid",
+        "email",
+        "phone",
+        "billingAddress",
+        "loginUsername",
+        "loginPassword",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "ClientProduct": {
+      "title": "ClientProduct",
+      "description": "A digital product or system built by BryTech for a client (Website, CRM, Client Area, or Automation Bot).",
+      "type": "object",
+      "properties": {
+        "clientId": {
+          "type": "string",
+          "description": "Parent client ID.",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "ownerUid": {
+          "type": "string",
+          "description": "Owner Firebase Auth UID.",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "name": {
+          "type": "string",
+          "description": "Product name.",
+          "minLength": 1,
+          "maxLength": 140
+        },
+        "type": {
+          "type": "string",
+          "description": "System module category.",
+          "enum": ["Website", "CRM", "Client Area", "Automation Bot"],
+          "minLength": 3,
+          "maxLength": 30
+        },
+        "domainOrHandle": {
+          "type": "string",
+          "description": "Production domain or bot handle.",
+          "minLength": 1,
+          "maxLength": 140
+        },
+        "progress": {
+          "type": "integer",
+          "description": "Completion percentage (0-100)."
+        },
+        "status": {
+          "type": "string",
+          "description": "Deployment lifecycle state.",
+          "enum": ["onboarding", "in_progress", "review", "live", "archived"],
+          "minLength": 4,
+          "maxLength": 20
+        },
+        "currentPhase": {
+          "type": "string",
+          "description": "Current active engineering sprint or phase.",
+          "minLength": 1,
+          "maxLength": 120
+        },
+        "leadsOrEventsMonth": {
+          "type": "integer",
+          "description": "Monthly operational metric count."
+        },
+        "metricLabel": {
+          "type": "string",
+          "description": "Label describing the monthly operational metric.",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "maintenanceMode": {
+          "type": "boolean",
+          "description": "Whether the system is currently in maintenance mode."
+        },
+        "lastDeploy": {
+          "type": "string",
+          "description": "Human-readable last deployment label.",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Creation server timestamp."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Last update server timestamp."
+        }
+      },
+      "required": [
+        "clientId",
+        "ownerUid",
+        "name",
+        "type",
+        "domainOrHandle",
+        "progress",
+        "status",
+        "currentPhase",
+        "leadsOrEventsMonth",
+        "metricLabel",
+        "maintenanceMode",
+        "lastDeploy",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "TimelineMilestone": {
+      "title": "TimelineMilestone",
+      "description": "Project status timeline milestone tracking deliverables and approval states.",
+      "type": "object",
+      "properties": {
+        "clientId": {
+          "type": "string",
+          "description": "Parent client ID.",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "productId": {
+          "type": "string",
+          "description": "Associated product ID.",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "productName": {
+          "type": "string",
+          "description": "Associated product name.",
+          "minLength": 1,
+          "maxLength": 140
+        },
+        "ownerUid": {
+          "type": "string",
+          "description": "Owner Firebase Auth UID.",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "title": {
+          "type": "string",
+          "description": "Milestone title.",
+          "minLength": 1,
+          "maxLength": 160
+        },
+        "description": {
+          "type": "string",
+          "description": "Detailed deliverables and scope for this milestone.",
+          "minLength": 1,
+          "maxLength": 400
+        },
+        "phaseOrder": {
+          "type": "integer",
+          "description": "Sequential order in the project timeline."
+        },
+        "dueDate": {
+          "type": "string",
+          "description": "Target or completion date string.",
+          "minLength": 1,
+          "maxLength": 60
+        },
+        "status": {
+          "type": "string",
+          "description": "Milestone execution state.",
+          "enum": ["upcoming", "in_progress", "review", "completed"],
+          "minLength": 6,
+          "maxLength": 20
+        },
+        "deliverableUrl": {
+          "type": "string",
+          "description": "Staging or preview link for the milestone deliverable.",
+          "minLength": 1,
+          "maxLength": 240
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Creation server timestamp."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Last update server timestamp."
+        }
+      },
+      "required": [
+        "clientId",
+        "productId",
+        "productName",
+        "ownerUid",
+        "title",
+        "description",
+        "phaseOrder",
+        "dueDate",
+        "status",
+        "deliverableUrl",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "ClientDocument": {
+      "title": "ClientDocument",
+      "description": "Document management record for specifications, contracts, architecture blueprints, and user guides.",
+      "type": "object",
+      "properties": {
+        "clientId": {
+          "type": "string",
+          "description": "Parent client ID.",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "productId": {
+          "type": "string",
+          "description": "Associated product ID.",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "productName": {
+          "type": "string",
+          "description": "Associated product name.",
+          "minLength": 1,
+          "maxLength": 140
+        },
+        "ownerUid": {
+          "type": "string",
+          "description": "Owner Firebase Auth UID.",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "title": {
+          "type": "string",
+          "description": "Document title.",
+          "minLength": 1,
+          "maxLength": 160
+        },
+        "category": {
+          "type": "string",
+          "description": "Document classification.",
+          "enum": [
+            "Contract & SLA",
+            "Architecture Blueprint",
+            "Invoice & Receipt",
+            "Brand & Assets",
+            "User Manual & Training"
+          ],
+          "minLength": 3,
+          "maxLength": 40
+        },
+        "fileName": {
+          "type": "string",
+          "description": "File name with extension.",
+          "minLength": 1,
+          "maxLength": 160
+        },
+        "fileSize": {
+          "type": "string",
+          "description": "Human-readable file size.",
+          "minLength": 1,
+          "maxLength": 40
+        },
+        "version": {
+          "type": "string",
+          "description": "Semantic version tag (e.g., v1.2).",
+          "minLength": 1,
+          "maxLength": 32
+        },
+        "status": {
+          "type": "string",
+          "description": "Approval or sign-off state of the document.",
+          "enum": ["draft", "pending_signature", "approved", "archived"],
+          "minLength": 5,
+          "maxLength": 24
+        },
+        "uploadedBy": {
+          "type": "string",
+          "description": "Author or uploader name.",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "summary": {
+          "type": "string",
+          "description": "Executive summary or contents of the document.",
+          "minLength": 1,
+          "maxLength": 500
+        },
+        "externalUrl": {
+          "type": "string",
+          "description": "Reference URL or document download target.",
+          "minLength": 1,
+          "maxLength": 300
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Creation server timestamp."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Last update server timestamp."
+        }
+      },
+      "required": [
+        "clientId",
+        "productId",
+        "productName",
+        "ownerUid",
+        "title",
+        "category",
+        "fileName",
+        "fileSize",
+        "version",
+        "status",
+        "uploadedBy",
+        "summary",
+        "externalUrl",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "ClientTask": {
+      "title": "ClientTask",
+      "description": "Engineering task, feature request, or change order submitted for a product.",
+      "type": "object",
+      "properties": {
+        "clientId": {
+          "type": "string",
+          "description": "Parent client ID.",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "productId": {
+          "type": "string",
+          "description": "Associated product ID.",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "productName": {
+          "type": "string",
+          "description": "Associated product name.",
+          "minLength": 1,
+          "maxLength": 140
+        },
+        "ownerUid": {
+          "type": "string",
+          "description": "Owner Firebase Auth UID.",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "title": {
+          "type": "string",
+          "description": "Task description.",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "priority": {
+          "type": "string",
+          "description": "Task urgency level.",
+          "enum": ["Normal", "High", "Urgent"],
+          "minLength": 4,
+          "maxLength": 16
+        },
+        "status": {
+          "type": "string",
+          "description": "Task workflow state.",
+          "enum": ["In Progress", "Ready for Review", "Completed"],
+          "minLength": 9,
+          "maxLength": 24
+        },
+        "assignee": {
+          "type": "string",
+          "description": "Assigned Kyiv engineer or squad.",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Creation server timestamp."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Last update server timestamp."
+        }
+      },
+      "required": [
+        "clientId",
+        "productId",
+        "productName",
+        "ownerUid",
+        "title",
+        "priority",
+        "status",
+        "assignee",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "ClientAutomation": {
+      "title": "ClientAutomation",
+      "description": "Automated Telegram, WhatsApp, SMS, or Payment workflow configured for a client.",
+      "type": "object",
+      "properties": {
+        "clientId": {
+          "type": "string",
+          "description": "Parent client ID.",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "ownerUid": {
+          "type": "string",
+          "description": "Owner Firebase Auth UID.",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "name": {
+          "type": "string",
+          "description": "Automation workflow name.",
+          "minLength": 1,
+          "maxLength": 140
+        },
+        "channel": {
+          "type": "string",
+          "description": "Communication or integration channel.",
+          "enum": ["Telegram", "WhatsApp", "SMS", "Payment Sync"],
+          "minLength": 3,
+          "maxLength": 24
+        },
+        "trigger": {
+          "type": "string",
+          "description": "Event trigger description.",
+          "minLength": 1,
+          "maxLength": 180
+        },
+        "active": {
+          "type": "boolean",
+          "description": "Whether the automation is currently active."
+        },
+        "runsThisMonth": {
+          "type": "integer",
+          "description": "Number of executions in the current billing month."
+        },
+        "template": {
+          "type": "string",
+          "description": "Message payload template.",
+          "minLength": 1,
+          "maxLength": 500
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Creation server timestamp."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Last update server timestamp."
+        }
+      },
+      "required": [
+        "clientId",
+        "ownerUid",
+        "name",
+        "channel",
+        "trigger",
+        "active",
+        "runsThisMonth",
+        "template",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "ClientInvoice": {
+      "title": "ClientInvoice",
+      "description": "Milestone billing invoice for a client account.",
+      "type": "object",
+      "properties": {
+        "clientId": {
+          "type": "string",
+          "description": "Parent client ID.",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "ownerUid": {
+          "type": "string",
+          "description": "Owner Firebase Auth UID.",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "invoiceNumber": {
+          "type": "string",
+          "description": "Display invoice code (e.g., INV-2026-01).",
+          "minLength": 1,
+          "maxLength": 40
+        },
+        "title": {
+          "type": "string",
+          "description": "Milestone billing description.",
+          "minLength": 1,
+          "maxLength": 160
+        },
+        "amountUsd": {
+          "type": "integer",
+          "description": "Invoice amount in USD."
+        },
+        "dueDate": {
+          "type": "string",
+          "description": "Invoice issue or due date.",
+          "minLength": 1,
+          "maxLength": 40
+        },
+        "status": {
+          "type": "string",
+          "description": "Invoice payment status.",
+          "enum": ["Pending", "Paid"],
+          "minLength": 4,
+          "maxLength": 16
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Creation server timestamp."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Last update server timestamp."
+        }
+      },
+      "required": [
+        "clientId",
+        "ownerUid",
+        "invoiceNumber",
+        "title",
+        "amountUsd",
+        "dueDate",
+        "status",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "ChatMessage": {
+      "title": "ChatMessage",
+      "description": "Direct real-time chat message between a client and the BryTech admin panel.",
+      "type": "object",
+      "properties": {
+        "clientId": {
+          "type": "string",
+          "description": "Parent client ID.",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "ownerUid": {
+          "type": "string",
+          "description": "Owner Firebase Auth UID.",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "senderRole": {
+          "type": "string",
+          "description": "Message sender role.",
+          "enum": ["client", "admin"],
+          "minLength": 5,
+          "maxLength": 12
+        },
+        "senderName": {
+          "type": "string",
+          "description": "Display name of the sender.",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "text": {
+          "type": "string",
+          "description": "Message text content.",
+          "minLength": 1,
+          "maxLength": 1000
+        },
+        "sentAtIso": {
+          "type": "string",
+          "description": "ISO timestamp string for display sorting.",
+          "minLength": 1,
+          "maxLength": 40
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp of message creation."
+        }
+      },
+      "required": [
+        "clientId",
+        "ownerUid",
+        "senderRole",
+        "senderName",
+        "text",
+        "sentAtIso",
+        "createdAt"
+      ]
+    }
+  },
+  "firestore": {
+    "/admins/{adminUid}": {
+      "schema": "AdminRecord",
+      "description": "Trusted administrator lookup collection."
+    },
+    "/clients/{clientId}": {
+      "schema": "ClientAccount",
+      "description": "Top-level client workspace documents."
+    },
+    "/clients/{clientId}/private/{infoId}": {
+      "schema": "ClientPrivateInfo",
+      "description": "Isolated PII contact, billing, and login credentials for a client."
+    },
+    "/clients/{clientId}/products/{productId}": {
+      "schema": "ClientProduct",
+      "description": "Products and business systems belonging to a client."
+    },
+    "/clients/{clientId}/timelines/{timelineId}": {
+      "schema": "TimelineMilestone",
+      "description": "Project status timeline milestones for a client's products."
+    },
+    "/clients/{clientId}/documents/{documentId}": {
+      "schema": "ClientDocument",
+      "description": "Document management records for a client."
+    },
+    "/clients/{clientId}/tasks/{taskId}": {
+      "schema": "ClientTask",
+      "description": "Engineering tasks and change requests for a client."
+    },
+    "/clients/{clientId}/automations/{automationId}": {
+      "schema": "ClientAutomation",
+      "description": "Automated bot and webhook workflows for a client."
+    },
+    "/clients/{clientId}/invoices/{invoiceId}": {
+      "schema": "ClientInvoice",
+      "description": "Milestone invoices for a client."
+    },
+    "/clients/{clientId}/messages/{messageId}": {
+      "schema": "ChatMessage",
+      "description": "Real-time direct chat messages between a client and the BryTech Admin Panel."
+    }
+  }
+}

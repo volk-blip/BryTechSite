@@ -1,0 +1,768 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // 1. Global Safety Net (Default-Deny Catch-All)
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // 2. Global Hardened Primitives
+    function isValidId(id) {
+      return id is string && id.size() >= 1 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isVerified() {
+      return isSignedIn() && request.auth.token.email_verified == true;
+    }
+
+    // Zero-lookup admin check safe for list queries (Cost-Optimization Clause)
+    function isBootstrappedAdmin() {
+      return isVerified() && request.auth.token.email == 'boris.brigin1@gmail.com';
+    }
+
+    // Full admin check for single-document operations
+    function isAdmin() {
+      return isBootstrappedAdmin() || (
+        isVerified() && exists(/databases/$(database)/documents/admins/$(request.auth.uid))
+      );
+    }
+
+    // Master Gate relational lookup on parent /clients/{clientId}
+    function isParentClientOwner(clientId) {
+      return exists(/databases/$(database)/documents/clients/$(clientId)) &&
+        get(/databases/$(database)/documents/clients/$(clientId)).data.ownerUid == request.auth.uid;
+    }
+
+    // 3. Entity Validation Blueprints ( Synchronized with firebase-blueprint.json )
+    function isValidAdminRecord(data) {
+      return data.keys().hasAll(['uid', 'role', 'createdAt']) &&
+        data.keys().hasOnly(['uid', 'role', 'createdAt']) &&
+        data.uid is string && data.uid.size() >= 1 && data.uid.size() <= 128 && data.uid.matches('^[a-zA-Z0-9_\\-]+$') &&
+        data.role is string && data.role.size() >= 5 && data.role.size() <= 32 && data.role in ['super_admin', 'admin'] &&
+        data.createdAt is timestamp;
+    }
+
+    function isValidClientAccount(data) {
+      return data.keys().hasAll([
+          'ownerUid',
+          'businessName',
+          'contactName',
+          'city',
+          'market',
+          'planName',
+          'accountStatus',
+          'overallProgress',
+          'estimatedAgencyCostUsd',
+          'brytechTotalPaidUsd',
+          'assignedPm',
+          'createdAt',
+          'updatedAt'
+        ]) &&
+        data.keys().hasOnly([
+          'ownerUid',
+          'businessName',
+          'contactName',
+          'city',
+          'market',
+          'planName',
+          'accountStatus',
+          'overallProgress',
+          'estimatedAgencyCostUsd',
+          'brytechTotalPaidUsd',
+          'assignedPm',
+          'createdAt',
+          'updatedAt'
+        ]) &&
+        data.ownerUid is string && data.ownerUid.size() >= 1 && data.ownerUid.size() <= 128 && data.ownerUid.matches('^[a-zA-Z0-9_\\-]+$') &&
+        data.businessName is string && data.businessName.size() >= 1 && data.businessName.size() <= 120 &&
+        data.contactName is string && data.contactName.size() >= 1 && data.contactName.size() <= 100 &&
+        data.city is string && data.city.size() >= 1 && data.city.size() <= 80 &&
+        data.market is string && data.market.size() >= 6 && data.market.size() <= 20 && data.market in ['Ukraine', 'Israel'] &&
+        data.planName is string && data.planName.size() >= 1 && data.planName.size() <= 160 &&
+        data.accountStatus is string && data.accountStatus.size() >= 6 && data.accountStatus.size() <= 20 && data.accountStatus in ['onboarding', 'active', 'maintenance', 'completed'] &&
+        data.overallProgress is int && data.overallProgress >= 0 && data.overallProgress <= 100 &&
+        data.estimatedAgencyCostUsd is int && data.estimatedAgencyCostUsd >= 0 && data.estimatedAgencyCostUsd <= 10000000 &&
+        data.brytechTotalPaidUsd is int && data.brytechTotalPaidUsd >= 0 && data.brytechTotalPaidUsd <= 10000000 &&
+        data.assignedPm is string && data.assignedPm.size() >= 1 && data.assignedPm.size() <= 100 &&
+        data.createdAt is timestamp &&
+        data.updatedAt is timestamp;
+    }
+
+    function isValidClientPrivateInfo(data) {
+      return data.keys().hasAll([
+          'clientId',
+          'ownerUid',
+          'email',
+          'phone',
+          'billingAddress',
+          'loginUsername',
+          'loginPassword',
+          'createdAt',
+          'updatedAt'
+        ]) &&
+        data.keys().hasOnly([
+          'clientId',
+          'ownerUid',
+          'email',
+          'phone',
+          'billingAddress',
+          'loginUsername',
+          'loginPassword',
+          'createdAt',
+          'updatedAt'
+        ]) &&
+        data.clientId is string && data.clientId.size() >= 1 && data.clientId.size() <= 128 && data.clientId.matches('^[a-zA-Z0-9_\\-]+$') &&
+        data.ownerUid is string && data.ownerUid.size() >= 1 && data.ownerUid.size() <= 128 && data.ownerUid.matches('^[a-zA-Z0-9_\\-]+$') &&
+        data.email is string && data.email.size() >= 3 && data.email.size() <= 120 &&
+        data.phone is string && data.phone.size() >= 3 && data.phone.size() <= 60 &&
+        data.billingAddress is string && data.billingAddress.size() >= 1 && data.billingAddress.size() <= 200 &&
+        data.loginUsername is string && data.loginUsername.size() >= 2 && data.loginUsername.size() <= 80 &&
+        data.loginPassword is string && data.loginPassword.size() >= 3 && data.loginPassword.size() <= 80 &&
+        data.createdAt is timestamp &&
+        data.updatedAt is timestamp;
+    }
+
+    function isValidClientProduct(data) {
+      return data.keys().hasAll([
+          'clientId',
+          'ownerUid',
+          'name',
+          'type',
+          'domainOrHandle',
+          'progress',
+          'status',
+          'currentPhase',
+          'leadsOrEventsMonth',
+          'metricLabel',
+          'maintenanceMode',
+          'lastDeploy',
+          'createdAt',
+          'updatedAt'
+        ]) &&
+        data.keys().hasOnly([
+          'clientId',
+          'ownerUid',
+          'name',
+          'type',
+          'domainOrHandle',
+          'progress',
+          'status',
+          'currentPhase',
+          'leadsOrEventsMonth',
+          'metricLabel',
+          'maintenanceMode',
+          'lastDeploy',
+          'createdAt',
+          'updatedAt'
+        ]) &&
+        data.clientId is string && data.clientId.size() >= 1 && data.clientId.size() <= 128 && data.clientId.matches('^[a-zA-Z0-9_\\-]+$') &&
+        data.ownerUid is string && data.ownerUid.size() >= 1 && data.ownerUid.size() <= 128 && data.ownerUid.matches('^[a-zA-Z0-9_\\-]+$') &&
+        data.name is string && data.name.size() >= 1 && data.name.size() <= 140 &&
+        data.type is string && data.type.size() >= 3 && data.type.size() <= 30 && data.type in ['Website', 'CRM', 'Client Area', 'Automation Bot'] &&
+        data.domainOrHandle is string && data.domainOrHandle.size() >= 1 && data.domainOrHandle.size() <= 140 &&
+        data.progress is int && data.progress >= 0 && data.progress <= 100 &&
+        data.status is string && data.status.size() >= 4 && data.status.size() <= 20 && data.status in ['onboarding', 'in_progress', 'review', 'live', 'archived'] &&
+        data.currentPhase is string && data.currentPhase.size() >= 1 && data.currentPhase.size() <= 120 &&
+        data.leadsOrEventsMonth is int && data.leadsOrEventsMonth >= 0 && data.leadsOrEventsMonth <= 100000000 &&
+        data.metricLabel is string && data.metricLabel.size() >= 1 && data.metricLabel.size() <= 80 &&
+        data.maintenanceMode is bool &&
+        data.lastDeploy is string && data.lastDeploy.size() >= 1 && data.lastDeploy.size() <= 80 &&
+        data.createdAt is timestamp &&
+        data.updatedAt is timestamp;
+    }
+
+    function isValidTimelineMilestone(data) {
+      return data.keys().hasAll([
+          'clientId',
+          'productId',
+          'productName',
+          'ownerUid',
+          'title',
+          'description',
+          'phaseOrder',
+          'dueDate',
+          'status',
+          'deliverableUrl',
+          'createdAt',
+          'updatedAt'
+        ]) &&
+        data.keys().hasOnly([
+          'clientId',
+          'productId',
+          'productName',
+          'ownerUid',
+          'title',
+          'description',
+          'phaseOrder',
+          'dueDate',
+          'status',
+          'deliverableUrl',
+          'createdAt',
+          'updatedAt'
+        ]) &&
+        data.clientId is string && data.clientId.size() >= 1 && data.clientId.size() <= 128 && data.clientId.matches('^[a-zA-Z0-9_\\-]+$') &&
+        data.productId is string && data.productId.size() >= 1 && data.productId.size() <= 128 && data.productId.matches('^[a-zA-Z0-9_\\-]+$') &&
+        data.productName is string && data.productName.size() >= 1 && data.productName.size() <= 140 &&
+        data.ownerUid is string && data.ownerUid.size() >= 1 && data.ownerUid.size() <= 128 && data.ownerUid.matches('^[a-zA-Z0-9_\\-]+$') &&
+        data.title is string && data.title.size() >= 1 && data.title.size() <= 160 &&
+        data.description is string && data.description.size() >= 1 && data.description.size() <= 400 &&
+        data.phaseOrder is int && data.phaseOrder >= 1 && data.phaseOrder <= 100 &&
+        data.dueDate is string && data.dueDate.size() >= 1 && data.dueDate.size() <= 60 &&
+        data.status is string && data.status.size() >= 6 && data.status.size() <= 20 && data.status in ['upcoming', 'in_progress', 'review', 'completed'] &&
+        data.deliverableUrl is string && data.deliverableUrl.size() >= 1 && data.deliverableUrl.size() <= 240 &&
+        data.createdAt is timestamp &&
+        data.updatedAt is timestamp;
+    }
+
+    function isValidClientDocument(data) {
+      return data.keys().hasAll([
+          'clientId',
+          'productId',
+          'productName',
+          'ownerUid',
+          'title',
+          'category',
+          'fileName',
+          'fileSize',
+          'version',
+          'status',
+          'uploadedBy',
+          'summary',
+          'externalUrl',
+          'createdAt',
+          'updatedAt'
+        ]) &&
+        data.keys().hasOnly([
+          'clientId',
+          'productId',
+          'productName',
+          'ownerUid',
+          'title',
+          'category',
+          'fileName',
+          'fileSize',
+          'version',
+          'status',
+          'uploadedBy',
+          'summary',
+          'externalUrl',
+          'createdAt',
+          'updatedAt'
+        ]) &&
+        data.clientId is string && data.clientId.size() >= 1 && data.clientId.size() <= 128 && data.clientId.matches('^[a-zA-Z0-9_\\-]+$') &&
+        data.productId is string && data.productId.size() >= 1 && data.productId.size() <= 128 && data.productId.matches('^[a-zA-Z0-9_\\-]+$') &&
+        data.productName is string && data.productName.size() >= 1 && data.productName.size() <= 140 &&
+        data.ownerUid is string && data.ownerUid.size() >= 1 && data.ownerUid.size() <= 128 && data.ownerUid.matches('^[a-zA-Z0-9_\\-]+$') &&
+        data.title is string && data.title.size() >= 1 && data.title.size() <= 160 &&
+        data.category is string && data.category.size() >= 3 && data.category.size() <= 40 && data.category in [
+          'Contract & SLA',
+          'Architecture Blueprint',
+          'Invoice & Receipt',
+          'Brand & Assets',
+          'User Manual & Training'
+        ] &&
+        data.fileName is string && data.fileName.size() >= 1 && data.fileName.size() <= 160 &&
+        data.fileSize is string && data.fileSize.size() >= 1 && data.fileSize.size() <= 40 &&
+        data.version is string && data.version.size() >= 1 && data.version.size() <= 32 &&
+        data.status is string && data.status.size() >= 5 && data.status.size() <= 24 && data.status in ['draft', 'pending_signature', 'approved', 'archived'] &&
+        data.uploadedBy is string && data.uploadedBy.size() >= 1 && data.uploadedBy.size() <= 100 &&
+        data.summary is string && data.summary.size() >= 1 && data.summary.size() <= 500 &&
+        data.externalUrl is string && data.externalUrl.size() >= 1 && data.externalUrl.size() <= 300 &&
+        data.createdAt is timestamp &&
+        data.updatedAt is timestamp;
+    }
+
+    function isValidClientTask(data) {
+      return data.keys().hasAll([
+          'clientId',
+          'productId',
+          'productName',
+          'ownerUid',
+          'title',
+          'priority',
+          'status',
+          'assignee',
+          'createdAt',
+          'updatedAt'
+        ]) &&
+        data.keys().hasOnly([
+          'clientId',
+          'productId',
+          'productName',
+          'ownerUid',
+          'title',
+          'priority',
+          'status',
+          'assignee',
+          'createdAt',
+          'updatedAt'
+        ]) &&
+        data.clientId is string && data.clientId.size() >= 1 && data.clientId.size() <= 128 && data.clientId.matches('^[a-zA-Z0-9_\\-]+$') &&
+        data.productId is string && data.productId.size() >= 1 && data.productId.size() <= 128 && data.productId.matches('^[a-zA-Z0-9_\\-]+$') &&
+        data.productName is string && data.productName.size() >= 1 && data.productName.size() <= 140 &&
+        data.ownerUid is string && data.ownerUid.size() >= 1 && data.ownerUid.size() <= 128 && data.ownerUid.matches('^[a-zA-Z0-9_\\-]+$') &&
+        data.title is string && data.title.size() >= 1 && data.title.size() <= 200 &&
+        data.priority is string && data.priority.size() >= 4 && data.priority.size() <= 16 && data.priority in ['Normal', 'High', 'Urgent'] &&
+        data.status is string && data.status.size() >= 9 && data.status.size() <= 24 && data.status in ['In Progress', 'Ready for Review', 'Completed'] &&
+        data.assignee is string && data.assignee.size() >= 1 && data.assignee.size() <= 100 &&
+        data.createdAt is timestamp &&
+        data.updatedAt is timestamp;
+    }
+
+    function isValidClientAutomation(data) {
+      return data.keys().hasAll([
+          'clientId',
+          'ownerUid',
+          'name',
+          'channel',
+          'trigger',
+          'active',
+          'runsThisMonth',
+          'template',
+          'createdAt',
+          'updatedAt'
+        ]) &&
+        data.keys().hasOnly([
+          'clientId',
+          'ownerUid',
+          'name',
+          'channel',
+          'trigger',
+          'active',
+          'runsThisMonth',
+          'template',
+          'createdAt',
+          'updatedAt'
+        ]) &&
+        data.clientId is string && data.clientId.size() >= 1 && data.clientId.size() <= 128 && data.clientId.matches('^[a-zA-Z0-9_\\-]+$') &&
+        data.ownerUid is string && data.ownerUid.size() >= 1 && data.ownerUid.size() <= 128 && data.ownerUid.matches('^[a-zA-Z0-9_\\-]+$') &&
+        data.name is string && data.name.size() >= 1 && data.name.size() <= 140 &&
+        data.channel is string && data.channel.size() >= 3 && data.channel.size() <= 24 && data.channel in ['Telegram', 'WhatsApp', 'SMS', 'Payment Sync'] &&
+        data.trigger is string && data.trigger.size() >= 1 && data.trigger.size() <= 180 &&
+        data.active is bool &&
+        data.runsThisMonth is int && data.runsThisMonth >= 0 && data.runsThisMonth <= 100000000 &&
+        data.template is string && data.template.size() >= 1 && data.template.size() <= 500 &&
+        data.createdAt is timestamp &&
+        data.updatedAt is timestamp;
+    }
+
+    function isValidClientInvoice(data) {
+      return data.keys().hasAll([
+          'clientId',
+          'ownerUid',
+          'invoiceNumber',
+          'title',
+          'amountUsd',
+          'dueDate',
+          'status',
+          'createdAt',
+          'updatedAt'
+        ]) &&
+        data.keys().hasOnly([
+          'clientId',
+          'ownerUid',
+          'invoiceNumber',
+          'title',
+          'amountUsd',
+          'dueDate',
+          'status',
+          'createdAt',
+          'updatedAt'
+        ]) &&
+        data.clientId is string && data.clientId.size() >= 1 && data.clientId.size() <= 128 && data.clientId.matches('^[a-zA-Z0-9_\\-]+$') &&
+        data.ownerUid is string && data.ownerUid.size() >= 1 && data.ownerUid.size() <= 128 && data.ownerUid.matches('^[a-zA-Z0-9_\\-]+$') &&
+        data.invoiceNumber is string && data.invoiceNumber.size() >= 1 && data.invoiceNumber.size() <= 40 &&
+        data.title is string && data.title.size() >= 1 && data.title.size() <= 160 &&
+        data.amountUsd is int && data.amountUsd >= 0 && data.amountUsd <= 10000000 &&
+        data.dueDate is string && data.dueDate.size() >= 1 && data.dueDate.size() <= 40 &&
+        data.status is string && data.status.size() >= 4 && data.status.size() <= 16 && data.status in ['Pending', 'Paid'] &&
+        data.createdAt is timestamp &&
+        data.updatedAt is timestamp;
+    }
+
+    function isValidChatMessage(data) {
+      return data.keys().hasAll([
+          'clientId',
+          'ownerUid',
+          'senderRole',
+          'senderName',
+          'text',
+          'sentAtIso',
+          'createdAt'
+        ]) &&
+        data.keys().hasOnly([
+          'clientId',
+          'ownerUid',
+          'senderRole',
+          'senderName',
+          'text',
+          'sentAtIso',
+          'createdAt'
+        ]) &&
+        data.clientId is string && data.clientId.size() >= 1 && data.clientId.size() <= 128 && data.clientId.matches('^[a-zA-Z0-9_\\-]+$') &&
+        data.ownerUid is string && data.ownerUid.size() >= 1 && data.ownerUid.size() <= 128 && data.ownerUid.matches('^[a-zA-Z0-9_\\-]+$') &&
+        data.senderRole is string && data.senderRole.size() >= 5 && data.senderRole.size() <= 12 && data.senderRole in ['client', 'admin'] &&
+        data.senderName is string && data.senderName.size() >= 1 && data.senderName.size() <= 100 &&
+        data.text is string && data.text.size() >= 1 && data.text.size() <= 1000 &&
+        data.sentAtIso is string && data.sentAtIso.size() >= 1 && data.sentAtIso.size() <= 40 &&
+        data.createdAt is timestamp;
+    }
+
+    // 4. Collection Rules
+
+    // /admins/{adminUid} — System-only RBAC table, never writable from client SDKs
+    match /admins/{adminUid} {
+      allow get: if isVerified() && isValidId(adminUid) && (request.auth.uid == adminUid || isAdmin());
+      allow list: if isBootstrappedAdmin();
+      allow create: if isBootstrappedAdmin() && isValidId(adminUid) && isValidAdminRecord(incoming()) && incoming().uid == adminUid && incoming().createdAt == request.time;
+      allow update: if isValidAdminRecord(incoming()) && false;
+      allow delete: if false;
+    }
+
+    // /clients/{clientId} — Master Client Account Metadata (No PII)
+    match /clients/{clientId} {
+      allow get: if isVerified() && isValidId(clientId) && (existing().ownerUid == request.auth.uid || isAdmin());
+      allow list: if isVerified() && (resource.data.ownerUid == request.auth.uid || isBootstrappedAdmin());
+
+      allow create: if isVerified() &&
+        isValidId(clientId) &&
+        isValidClientAccount(incoming()) &&
+        incoming().createdAt == request.time &&
+        incoming().updatedAt == request.time &&
+        (incoming().ownerUid == request.auth.uid || isAdmin());
+
+      allow update: if isValidClientAccount(incoming()) &&
+        isVerified() &&
+        isValidId(clientId) &&
+        incoming().ownerUid == existing().ownerUid &&
+        incoming().createdAt == existing().createdAt &&
+        incoming().updatedAt == request.time &&
+        (
+          isAdmin() ||
+          (
+            existing().ownerUid == request.auth.uid &&
+            existing().accountStatus != 'completed' &&
+            (
+              // Action 1: Update overall progress
+              incoming().diff(existing()).affectedKeys().hasOnly(['overallProgress', 'updatedAt']) ||
+              // Action 2: Update business profile details
+              incoming().diff(existing()).affectedKeys().hasOnly(['businessName', 'contactName', 'city', 'planName', 'overallProgress', 'updatedAt'])
+            )
+          )
+        );
+
+      allow delete: if isVerified() && isValidId(clientId) && isAdmin();
+
+      // /clients/{clientId}/private/{infoId} — Isolated PII & Client Portal Credentials
+      match /private/{infoId} {
+        allow get: if isVerified() && isValidId(clientId) && isValidId(infoId) && (isParentClientOwner(clientId) || isAdmin());
+        allow list: if isVerified() && (resource.data.ownerUid == request.auth.uid || isBootstrappedAdmin());
+
+        allow create: if isVerified() &&
+          isValidId(clientId) &&
+          isValidId(infoId) &&
+          isValidClientPrivateInfo(incoming()) &&
+          incoming().clientId == clientId &&
+          incoming().createdAt == request.time &&
+          incoming().updatedAt == request.time &&
+          (
+            (incoming().ownerUid == request.auth.uid && isParentClientOwner(clientId)) ||
+            isAdmin()
+          );
+
+        allow update: if isValidClientPrivateInfo(incoming()) &&
+          isVerified() &&
+          isValidId(clientId) &&
+          isValidId(infoId) &&
+          incoming().clientId == existing().clientId &&
+          incoming().ownerUid == existing().ownerUid &&
+          incoming().createdAt == existing().createdAt &&
+          incoming().updatedAt == request.time &&
+          (
+            isAdmin() ||
+            (
+              isParentClientOwner(clientId) &&
+              incoming().diff(existing()).affectedKeys().hasOnly(['email', 'phone', 'billingAddress', 'loginUsername', 'loginPassword', 'updatedAt'])
+            )
+          );
+
+        allow delete: if isVerified() && isValidId(clientId) && isValidId(infoId) && isAdmin();
+      }
+
+      // /clients/{clientId}/products/{productId}
+      match /products/{productId} {
+        allow get: if isVerified() && isValidId(clientId) && isValidId(productId) && (isParentClientOwner(clientId) || isAdmin());
+        allow list: if isVerified() && (resource.data.ownerUid == request.auth.uid || isBootstrappedAdmin());
+
+        allow create: if isVerified() &&
+          isValidId(clientId) &&
+          isValidId(productId) &&
+          isValidClientProduct(incoming()) &&
+          incoming().clientId == clientId &&
+          incoming().createdAt == request.time &&
+          incoming().updatedAt == request.time &&
+          (
+            (incoming().ownerUid == request.auth.uid && isParentClientOwner(clientId)) ||
+            isAdmin()
+          );
+
+        allow update: if isValidClientProduct(incoming()) &&
+          isVerified() &&
+          isValidId(clientId) &&
+          isValidId(productId) &&
+          incoming().clientId == existing().clientId &&
+          incoming().ownerUid == existing().ownerUid &&
+          incoming().createdAt == existing().createdAt &&
+          incoming().updatedAt == request.time &&
+          (
+            isAdmin() ||
+            (
+              isParentClientOwner(clientId) &&
+              existing().status != 'archived' &&
+              (
+                incoming().diff(existing()).affectedKeys().hasOnly(['maintenanceMode', 'lastDeploy', 'updatedAt']) ||
+                incoming().diff(existing()).affectedKeys().hasOnly(['progress', 'status', 'currentPhase', 'lastDeploy', 'updatedAt']) ||
+                incoming().diff(existing()).affectedKeys().hasOnly(['name', 'domainOrHandle', 'progress', 'status', 'currentPhase', 'maintenanceMode', 'lastDeploy', 'updatedAt'])
+              )
+            )
+          );
+
+        allow delete: if isVerified() && isValidId(clientId) && isValidId(productId) && (isParentClientOwner(clientId) || isAdmin());
+      }
+
+      // /clients/{clientId}/timelines/{timelineId}
+      match /timelines/{timelineId} {
+        allow get: if isVerified() && isValidId(clientId) && isValidId(timelineId) && (isParentClientOwner(clientId) || isAdmin());
+        allow list: if isVerified() && (resource.data.ownerUid == request.auth.uid || isBootstrappedAdmin());
+
+        allow create: if isVerified() &&
+          isValidId(clientId) &&
+          isValidId(timelineId) &&
+          isValidTimelineMilestone(incoming()) &&
+          incoming().clientId == clientId &&
+          incoming().createdAt == request.time &&
+          incoming().updatedAt == request.time &&
+          exists(/databases/$(database)/documents/clients/$(clientId)/products/$(incoming().productId)) &&
+          (
+            (incoming().ownerUid == request.auth.uid && isParentClientOwner(clientId)) ||
+            isAdmin()
+          );
+
+        allow update: if isValidTimelineMilestone(incoming()) &&
+          isVerified() &&
+          isValidId(clientId) &&
+          isValidId(timelineId) &&
+          incoming().clientId == existing().clientId &&
+          incoming().productId == existing().productId &&
+          incoming().ownerUid == existing().ownerUid &&
+          incoming().createdAt == existing().createdAt &&
+          incoming().updatedAt == request.time &&
+          (
+            isAdmin() ||
+            (
+              isParentClientOwner(clientId) &&
+              existing().status != 'completed' &&
+              (
+                incoming().diff(existing()).affectedKeys().hasOnly(['status', 'dueDate', 'updatedAt']) ||
+                incoming().diff(existing()).affectedKeys().hasOnly(['title', 'description', 'dueDate', 'status', 'deliverableUrl', 'updatedAt'])
+              )
+            )
+          );
+
+        allow delete: if isVerified() && isValidId(clientId) && isValidId(timelineId) && (isParentClientOwner(clientId) || isAdmin());
+      }
+
+      // /clients/{clientId}/documents/{documentId}
+      match /documents/{documentId} {
+        allow get: if isVerified() && isValidId(clientId) && isValidId(documentId) && (isParentClientOwner(clientId) || isAdmin());
+        allow list: if isVerified() && (resource.data.ownerUid == request.auth.uid || isBootstrappedAdmin());
+
+        allow create: if isVerified() &&
+          isValidId(clientId) &&
+          isValidId(documentId) &&
+          isValidClientDocument(incoming()) &&
+          incoming().clientId == clientId &&
+          incoming().createdAt == request.time &&
+          incoming().updatedAt == request.time &&
+          exists(/databases/$(database)/documents/clients/$(clientId)/products/$(incoming().productId)) &&
+          (
+            (incoming().ownerUid == request.auth.uid && isParentClientOwner(clientId)) ||
+            isAdmin()
+          );
+
+        allow update: if isValidClientDocument(incoming()) &&
+          isVerified() &&
+          isValidId(clientId) &&
+          isValidId(documentId) &&
+          incoming().clientId == existing().clientId &&
+          incoming().productId == existing().productId &&
+          incoming().ownerUid == existing().ownerUid &&
+          incoming().createdAt == existing().createdAt &&
+          incoming().updatedAt == request.time &&
+          (
+            isAdmin() ||
+            (
+              isParentClientOwner(clientId) &&
+              existing().status != 'archived' &&
+              (
+                incoming().diff(existing()).affectedKeys().hasOnly(['status', 'updatedAt']) ||
+                incoming().diff(existing()).affectedKeys().hasOnly(['title', 'category', 'fileName', 'version', 'status', 'summary', 'externalUrl', 'updatedAt'])
+              )
+            )
+          );
+
+        allow delete: if isVerified() && isValidId(clientId) && isValidId(documentId) && (isParentClientOwner(clientId) || isAdmin());
+      }
+
+      // /clients/{clientId}/tasks/{taskId}
+      match /tasks/{taskId} {
+        allow get: if isVerified() && isValidId(clientId) && isValidId(taskId) && (isParentClientOwner(clientId) || isAdmin());
+        allow list: if isVerified() && (resource.data.ownerUid == request.auth.uid || isBootstrappedAdmin());
+
+        allow create: if isVerified() &&
+          isValidId(clientId) &&
+          isValidId(taskId) &&
+          isValidClientTask(incoming()) &&
+          incoming().clientId == clientId &&
+          incoming().createdAt == request.time &&
+          incoming().updatedAt == request.time &&
+          exists(/databases/$(database)/documents/clients/$(clientId)/products/$(incoming().productId)) &&
+          (
+            (incoming().ownerUid == request.auth.uid && isParentClientOwner(clientId)) ||
+            isAdmin()
+          );
+
+        allow update: if isValidClientTask(incoming()) &&
+          isVerified() &&
+          isValidId(clientId) &&
+          isValidId(taskId) &&
+          incoming().clientId == existing().clientId &&
+          incoming().productId == existing().productId &&
+          incoming().ownerUid == existing().ownerUid &&
+          incoming().createdAt == existing().createdAt &&
+          incoming().updatedAt == request.time &&
+          (
+            isAdmin() ||
+            (
+              isParentClientOwner(clientId) &&
+              existing().status != 'Completed' &&
+              (
+                incoming().diff(existing()).affectedKeys().hasOnly(['status', 'priority', 'updatedAt']) ||
+                incoming().diff(existing()).affectedKeys().hasOnly(['title', 'priority', 'status', 'assignee', 'updatedAt'])
+              )
+            )
+          );
+
+        allow delete: if isVerified() && isValidId(clientId) && isValidId(taskId) && (isParentClientOwner(clientId) || isAdmin());
+      }
+
+      // /clients/{clientId}/automations/{automationId}
+      match /automations/{automationId} {
+        allow get: if isVerified() && isValidId(clientId) && isValidId(automationId) && (isParentClientOwner(clientId) || isAdmin());
+        allow list: if isVerified() && (resource.data.ownerUid == request.auth.uid || isBootstrappedAdmin());
+
+        allow create: if isVerified() &&
+          isValidId(clientId) &&
+          isValidId(automationId) &&
+          isValidClientAutomation(incoming()) &&
+          incoming().clientId == clientId &&
+          incoming().createdAt == request.time &&
+          incoming().updatedAt == request.time &&
+          (
+            (incoming().ownerUid == request.auth.uid && isParentClientOwner(clientId)) ||
+            isAdmin()
+          );
+
+        allow update: if isValidClientAutomation(incoming()) &&
+          isVerified() &&
+          isValidId(clientId) &&
+          isValidId(automationId) &&
+          incoming().clientId == existing().clientId &&
+          incoming().ownerUid == existing().ownerUid &&
+          incoming().createdAt == existing().createdAt &&
+          incoming().updatedAt == request.time &&
+          (
+            isAdmin() ||
+            (
+              isParentClientOwner(clientId) &&
+              (
+                incoming().diff(existing()).affectedKeys().hasOnly(['active', 'runsThisMonth', 'updatedAt']) ||
+                incoming().diff(existing()).affectedKeys().hasOnly(['name', 'channel', 'trigger', 'active', 'runsThisMonth', 'template', 'updatedAt'])
+              )
+            )
+          );
+
+        allow delete: if isVerified() && isValidId(clientId) && isValidId(automationId) && (isParentClientOwner(clientId) || isAdmin());
+      }
+
+      // /clients/{clientId}/invoices/{invoiceId}
+      match /invoices/{invoiceId} {
+        allow get: if isVerified() && isValidId(clientId) && isValidId(invoiceId) && (isParentClientOwner(clientId) || isAdmin());
+        allow list: if isVerified() && (resource.data.ownerUid == request.auth.uid || isBootstrappedAdmin());
+
+        allow create: if isVerified() &&
+          isValidId(clientId) &&
+          isValidId(invoiceId) &&
+          isValidClientInvoice(incoming()) &&
+          incoming().clientId == clientId &&
+          incoming().createdAt == request.time &&
+          incoming().updatedAt == request.time &&
+          (
+            (incoming().ownerUid == request.auth.uid && isParentClientOwner(clientId)) ||
+            isAdmin()
+          );
+
+        allow update: if isValidClientInvoice(incoming()) &&
+          isVerified() &&
+          isValidId(clientId) &&
+          isValidId(invoiceId) &&
+          incoming().clientId == existing().clientId &&
+          incoming().ownerUid == existing().ownerUid &&
+          incoming().createdAt == existing().createdAt &&
+          incoming().updatedAt == request.time &&
+          (
+            isAdmin() ||
+            (
+              isParentClientOwner(clientId) &&
+              existing().status != 'Paid' &&
+              incoming().diff(existing()).affectedKeys().hasOnly(['status', 'updatedAt'])
+            )
+          );
+
+        allow delete: if isVerified() && isValidId(clientId) && isValidId(invoiceId) && isAdmin();
+      }
+
+      // /clients/{clientId}/messages/{messageId} — Immutable Real-Time Chat Messages
+      match /messages/{messageId} {
+        allow get: if isVerified() && isValidId(clientId) && isValidId(messageId) && (isParentClientOwner(clientId) || isAdmin());
+        allow list: if isVerified() && (resource.data.ownerUid == request.auth.uid || isBootstrappedAdmin());
+
+        allow create: if isVerified() &&
+          isValidId(clientId) &&
+          isValidId(messageId) &&
+          isValidChatMessage(incoming()) &&
+          incoming().clientId == clientId &&
+          incoming().createdAt == request.time &&
+          (
+            (incoming().ownerUid == request.auth.uid && isParentClientOwner(clientId)) ||
+            isAdmin()
+          );
+
+        allow update: if isValidChatMessage(incoming()) && false;
+        allow delete: if isVerified() && isValidId(clientId) && isValidId(messageId) && isAdmin();
+      }
+    }
+  }
+}

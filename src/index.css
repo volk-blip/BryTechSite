@@ -1,0 +1,70 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --font-sans: 'Plus Jakarta Sans', 'Manrope', 'Heebo', -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', sans-serif;
+    --accent: #0071E3;
+    --accent-cyan: #15BCDF;
+    --champagne-gold: #D4AF37;
+    --champagne-gold-soft: #E6C762;
+    --apple-bg: #F5F5F7;
+    --apple-dark: #1D1D1F;
+    --apple-muted: #6E6E73;
+  }
+
+  html {
+    font-family: var(--font-sans);
+    background-color: #F5F5F7;
+    color: #1D1D1F;
+    scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    letter-spacing: -0.012em;
+  }
+
+  body {
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden;
+    font-family: var(--font-sans);
+    background-color: #F5F5F7;
+    color: #1D1D1F;
+  }
+
+  h1, h2, h3, h4 {
+    letter-spacing: -0.03em;
+    text-wrap: balance;
+  }
+}
+
+/* Custom cursor hiding on desktop when custom cursor is active */
+@media (min-width: 769px) and (pointer: fine) {
+  body.custom-cursor-enabled,
+  body.custom-cursor-enabled a,
+  body.custom-cursor-enabled button,
+  body.custom-cursor-enabled [role="button"],
+  body.custom-cursor-enabled input,
+  body.custom-cursor-enabled select,
+  body.custom-cursor-enabled textarea {
+    cursor: none !important;
+  }
+}
+
+/* Clean Apple-style subtle scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #F5F5F7;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #C7C7CC;
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #8E8E93;
+}
