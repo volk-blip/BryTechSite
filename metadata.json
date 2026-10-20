@@ -1,6 +1,6 @@
 {
   "name": "BryTech - Global Digital Systems & High-Scale Websites",
-  "description": "BryTech, engineering mission-critical websites and full-scale business systems for clients around the globe.",
+  "description": "BryTech builds custom unified business systems, CRM, online booking, client portals, and WhatsApp/Telegram/Instagram AI bots tailored to your workflow.",
   "requestFramePermissions": [],
   "majorCapabilities": [
     "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"

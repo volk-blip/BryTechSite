@@ -20,6 +20,7 @@ import { ContactSection } from './components/ContactSection';
 import { ClientAreaPortal } from './components/ClientAreaPortal';
 import { VisitorLiveChatWidget } from './components/VisitorLiveChatWidget';
 import { BryTechLogo } from './components/BryTechLogo';
+import { applyDynamicPageSeo } from './utils/seoManager';
 import { ArrowLeft, Shield, Send, MessageCircle, Instagram, PhoneCall } from 'lucide-react';
 
 export function App() {
@@ -33,8 +34,8 @@ export function App() {
   useEffect(() => {
     const dir = TRANSLATIONS[lang].dir;
     document.documentElement.dir = dir;
-    document.documentElement.lang = lang;
-  }, [lang]);
+    applyDynamicPageSeo(lang, activePage);
+  }, [lang, activePage]);
 
   const handleSelectPackage = (pkgName: string) => {
     setSelectedPackage(pkgName);

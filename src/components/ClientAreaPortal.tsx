@@ -41,6 +41,7 @@ import {
   loadLocalVisitorChatsStore,
 } from '../services/realtimeChat';
 import { Language, TRANSLATIONS } from '../i18n/translations';
+import { PORTAL_LANGUAGE_OPTIONS, tr } from '../i18n/portalTranslations';
 import { useIsMobile } from '../hooks/useIsMobile';
 import { BryTechVisualArtwork } from './BryTechVisualArtwork';
 import {
@@ -100,6 +101,7 @@ export const ClientAreaPortal: React.FC<ClientAreaPortalProps> = ({
   isOpen,
   onClose,
   lang,
+  onChangeLang,
   initialMode = 'client',
 }) => {
   const t = TRANSLATIONS[lang];
@@ -451,7 +453,15 @@ export const ClientAreaPortal: React.FC<ClientAreaPortalProps> = ({
     );
 
     if (!matchedWorkspace) {
-      setClientLoginError('Invalid username or password. Please contact your account administrator.');
+      setClientLoginError(
+        tr(
+          lang,
+          'Invalid username or password. Please contact your account administrator.',
+          'Неверное имя пользователя или пароль. Пожалуйста, свяжитесь с администратором.',
+          'Невірне ім’я користувача або пароль. Зверніться до адміністратора.',
+          'שם משתמש או סיסמה שגויים. אנא פנה למנהל החשבון שלך.'
+        )
+      );
       return;
     }
 
@@ -472,7 +482,15 @@ export const ClientAreaPortal: React.FC<ClientAreaPortalProps> = ({
       setPortalMode('admin');
       setAdminPasswordInput('');
     } else {
-      setAdminLoginError('Invalid administrator credentials.');
+      setAdminLoginError(
+        tr(
+          lang,
+          'Invalid administrator credentials.',
+          'Неверные учетные данные администратора.',
+          'Невірні облікові дані адміністратора.',
+          'פרטי כניסה למנהל שגויים.'
+        )
+      );
     }
   };
 
@@ -498,7 +516,15 @@ export const ClientAreaPortal: React.FC<ClientAreaPortalProps> = ({
     setProductNoteDrafts((prev) => ({ ...prev, [prod.id]: '' }));
     await realtimeChatHub.sendProductNote(newNote);
 
-    setNoteSubmittedToast(`Note added to "${prod.name}" and sent to Admin.`);
+    setNoteSubmittedToast(
+      tr(
+        lang,
+        `Note added to "${prod.name}" and sent to Admin.`,
+        `Заметка добавлена к «${prod.name}» и отправлена администратору.`,
+        `Нотатку додано до «${prod.name}» та надіслано адміністратору.`,
+        `הערה נוספה ל-"${prod.name}" ונשלחה למנהל המערכת.`
+      )
+    );
     setTimeout(() => setNoteSubmittedToast(null), 3500);
   };
 
@@ -1183,33 +1209,68 @@ export const ClientAreaPortal: React.FC<ClientAreaPortalProps> = ({
           className="relative w-full max-w-md rounded-[32px] bg-white border border-black/[0.08] shadow-[0_32px_80px_rgba(0,0,0,0.18)] overflow-hidden my-auto"
         >
           {/* Popup Header */}
-          <div className="px-7 pt-7 pb-5 flex items-center justify-between border-b border-black/[0.06]">
+          <div className="px-7 pt-7 pb-5 flex items-center justify-between border-b border-black/[0.06] gap-3">
             <div className="flex items-center gap-3.5">
               <BryTechLogo theme="light-surface" size="md" showWordmark={false} />
               <div>
                 <span className="text-xs font-semibold text-[#0071e3] block">
-                  BryTech Client Portal
+                  {tr(
+                    lang,
+                    'BryTech Client Portal',
+                    'Клиентский Портал BryTech',
+                    'Клієнтський Портал BryTech',
+                    'פורטל לקוחות BryTech'
+                  )}
                 </span>
                 <h2 className="text-xl font-bold tracking-tight text-[#1d1d1f] m-0">
-                  Client Area Sign In
+                  {tr(
+                    lang,
+                    'Client Area Sign In',
+                    'Вход в Личный Кабинет',
+                    'Вхід до Кабінету Клієнта',
+                    'כניסה לאזור האישי ללקוחות'
+                  )}
                 </h2>
               </div>
             </div>
-            <button
-              type="button"
-              onClick={onClose}
-              className="w-9 h-9 rounded-full bg-[#f5f5f7] hover:bg-[#e8e8ed] text-[#6e6e73] hover:text-[#1d1d1f] flex items-center justify-center cursor-pointer transition-colors"
-              aria-label="Close Login Popup"
-            >
-              <X className="w-4 h-4" />
-            </button>
+            <div className="flex items-center gap-2">
+              <div
+                className="flex items-center bg-[#f5f5f7] p-0.5 rounded-full border border-black/[0.06]"
+                role="group"
+                aria-label="Select Client Area Language"
+              >
+                {PORTAL_LANGUAGE_OPTIONS.map((opt) => (
+                  <button
+                    key={opt.code}
+                    type="button"
+                    onClick={() => onChangeLang(opt.code)}
+                    title={opt.nativeName}
+                    className={`px-2 py-1 text-[11px] font-bold rounded-full transition-all cursor-pointer ${
+                      lang === opt.code
+                        ? 'bg-white text-[#1d1d1f] shadow-xs'
+                        : 'text-[#6e6e73] hover:text-[#1d1d1f]'
+                    }`}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
+              <button
+                type="button"
+                onClick={onClose}
+                className="w-9 h-9 rounded-full bg-[#f5f5f7] hover:bg-[#e8e8ed] text-[#6e6e73] hover:text-[#1d1d1f] flex items-center justify-center cursor-pointer transition-colors shrink-0"
+                aria-label="Close Login Popup"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
           </div>
 
           {/* Strictly Username & Password Form */}
           <form onSubmit={handleClientCredentialsLogin} className="p-7 space-y-5">
             <div>
               <label className="block text-xs font-semibold text-[#6e6e73] mb-2">
-                Username
+                {tr(lang, 'Username', 'Имя пользователя (Логин)', 'Ім’я користувача (Логін)', 'שם משתמש')}
               </label>
               <input
                 type="text"
@@ -1217,14 +1278,20 @@ export const ClientAreaPortal: React.FC<ClientAreaPortalProps> = ({
                 autoComplete="username"
                 value={loginUsernameInput}
                 onChange={(e) => setLoginUsernameInput(e.target.value)}
-                placeholder="Enter your username"
+                placeholder={tr(
+                  lang,
+                  'Enter your username',
+                  'Введите ваш логин',
+                  'Введіть ваш логін',
+                  'הזן את שם המשתמש שלך'
+                )}
                 className="w-full px-4 py-3.5 rounded-2xl bg-[#f5f5f7] border border-transparent focus:border-[#0071e3] focus:bg-white text-sm text-[#1d1d1f] focus:outline-none transition-all"
               />
             </div>
 
             <div>
               <label className="block text-xs font-semibold text-[#6e6e73] mb-2">
-                Password
+                {tr(lang, 'Password', 'Пароль', 'Пароль', 'סיסמה')}
               </label>
               <input
                 type="password"
@@ -1248,7 +1315,15 @@ export const ClientAreaPortal: React.FC<ClientAreaPortalProps> = ({
               className="w-full py-4 px-6 rounded-full bg-[#0071e3] hover:bg-[#0077ed] text-white font-semibold text-sm flex items-center justify-center gap-2 shadow-lg shadow-[#0071e3]/25 cursor-pointer transition-all"
             >
               <KeyRound className="w-4 h-4" />
-              <span>Sign In to Client Area</span>
+              <span>
+                {tr(
+                  lang,
+                  'Sign In to Client Area',
+                  'Войти в Личный Кабинет',
+                  'Увійти до Кабінету Клієнта',
+                  'כניסה לאזור האישי'
+                )}
+              </span>
             </button>
           </form>
         </motion.div>
@@ -1274,33 +1349,68 @@ export const ClientAreaPortal: React.FC<ClientAreaPortalProps> = ({
           transition={{ duration: 0.28 }}
           className="relative w-full max-w-md rounded-[32px] bg-[#1d1d1f] text-white border border-white/15 shadow-2xl overflow-hidden"
         >
-          <div className="px-7 pt-7 pb-5 border-b border-white/10 flex items-center justify-between">
+          <div className="px-7 pt-7 pb-5 border-b border-white/10 flex items-center justify-between gap-3">
             <div className="flex items-center gap-3.5">
               <div className="w-11 h-11 rounded-2xl bg-[#0071e3] text-white flex items-center justify-center">
                 <Shield className="w-5 h-5" />
               </div>
               <div>
                 <span className="text-xs font-semibold text-[#15BCDF] block">
-                  Restricted Executive Access
+                  {tr(
+                    lang,
+                    'Restricted Executive Access',
+                    'Закрытый Доступ Управления',
+                    'Закритий Доступ Управління',
+                    'גישת הנהלה מוגבלת'
+                  )}
                 </span>
                 <h2 className="text-xl font-bold tracking-tight m-0">
-                  Admin Authentication
+                  {tr(
+                    lang,
+                    'Admin Authentication',
+                    'Авторизация Администратора',
+                    'Авторизація Адміністратора',
+                    'אימות מנהל מערכת'
+                  )}
                 </h2>
               </div>
             </div>
-            <button
-              type="button"
-              onClick={onClose}
-              className="w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 text-white/70 hover:text-white flex items-center justify-center cursor-pointer transition-colors"
-            >
-              <X className="w-4 h-4" />
-            </button>
+            <div className="flex items-center gap-2">
+              <div
+                className="flex items-center bg-white/10 p-0.5 rounded-full border border-white/15"
+                role="group"
+                aria-label="Select Admin Language"
+              >
+                {PORTAL_LANGUAGE_OPTIONS.map((opt) => (
+                  <button
+                    key={opt.code}
+                    type="button"
+                    onClick={() => onChangeLang(opt.code)}
+                    title={opt.nativeName}
+                    className={`px-2 py-1 text-[11px] font-bold rounded-full transition-all cursor-pointer ${
+                      lang === opt.code
+                        ? 'bg-[#0071e3] text-white shadow-xs'
+                        : 'text-white/70 hover:text-white'
+                    }`}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
+              <button
+                type="button"
+                onClick={onClose}
+                className="w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 text-white/70 hover:text-white flex items-center justify-center cursor-pointer transition-colors shrink-0"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
           </div>
 
           <form onSubmit={handleAdminCredentialsLogin} className="p-7 space-y-5">
             <div>
               <label className="block text-xs font-semibold text-white/70 mb-2">
-                Username
+                {tr(lang, 'Username', 'Логин администратора', 'Логін адміністратора', 'שם משתמש')}
               </label>
               <input
                 type="text"
@@ -1308,14 +1418,14 @@ export const ClientAreaPortal: React.FC<ClientAreaPortalProps> = ({
                 autoComplete="off"
                 value={adminUsernameInput}
                 onChange={(e) => setAdminUsernameInput(e.target.value)}
-                placeholder="Enter username"
+                placeholder={tr(lang, 'Enter username', 'Введите логин', 'Введіть логін', 'הזן שם משתמש')}
                 className="w-full px-4 py-3.5 rounded-2xl bg-white/10 border border-white/15 text-white text-sm focus:outline-none focus:border-[#0071e3]"
               />
             </div>
 
             <div>
               <label className="block text-xs font-semibold text-white/70 mb-2">
-                Password
+                {tr(lang, 'Password', 'Пароль', 'Пароль', 'סיסמה')}
               </label>
               <input
                 type="password"
@@ -1339,7 +1449,15 @@ export const ClientAreaPortal: React.FC<ClientAreaPortalProps> = ({
               className="w-full py-4 px-6 rounded-full bg-[#0071e3] hover:bg-[#0077ed] text-white font-semibold text-sm flex items-center justify-center gap-2 cursor-pointer transition-all shadow-lg shadow-[#0071e3]/25"
             >
               <Shield className="w-4 h-4" />
-              <span>Sign In to Admin Panel</span>
+              <span>
+                {tr(
+                  lang,
+                  'Sign In to Admin Panel',
+                  'Войти в Панель Администратора',
+                  'Увійти до Адмін-Панелі',
+                  'כניסה לפאנל הניהול'
+                )}
+              </span>
             </button>
           </form>
         </motion.div>
@@ -1363,19 +1481,54 @@ export const ClientAreaPortal: React.FC<ClientAreaPortalProps> = ({
             <div>
               <div className="flex items-center gap-2.5">
                 <h1 className="text-lg sm:text-xl font-bold tracking-tight text-[#1d1d1f] m-0">
-                  BryTech Executive Admin Center
+                  {tr(
+                    lang,
+                    'BryTech Executive Admin Center',
+                    'Центр Управления Администратора BryTech',
+                    'Центр Управління Адміністратора BryTech',
+                    'מרכז הניהול הראשי של BryTech'
+                  )}
                 </h1>
                 <span className="px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-xs font-semibold">
                   {dbSyncBadge}
                 </span>
               </div>
               <span className="text-xs text-[#6e6e73] block">
-                Manage Client Logins, Product Notes, Progress Sliders, Roadmaps, Documents, Billing &amp; Contact Channels
+                {tr(
+                  lang,
+                  'Manage Client Logins, Product Notes, Progress Sliders, Roadmaps, Documents, Billing & Contact Channels',
+                  'Управление логинами клиентов, заметками, прогрессом проектов, дорожными картами, документами, счетами и контактами',
+                  'Управління логінами клієнтів, нотатками, прогресом проєктів, дорожніми картами, документами, рахунками та контактами',
+                  'ניהול פרטי גישה ללקוחות, הערות מוצר, התקדמות פרויקטים, אבני דרך, מסמכים, חיובים וערוצי קשר'
+                )}
               </span>
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-3">
+            {/* 4-Language Switcher in Admin Header */}
+            <div
+              className="flex items-center bg-[#f5f5f7] p-1 rounded-full border border-black/[0.06]"
+              role="group"
+              aria-label="Select Admin Panel Language"
+            >
+              {PORTAL_LANGUAGE_OPTIONS.map((opt) => (
+                <button
+                  key={opt.code}
+                  type="button"
+                  onClick={() => onChangeLang(opt.code)}
+                  title={opt.nativeName}
+                  className={`px-2.5 py-1 text-xs font-bold rounded-full transition-all cursor-pointer ${
+                    lang === opt.code
+                      ? 'bg-[#0071e3] text-white shadow-xs'
+                      : 'text-[#6e6e73] hover:text-[#1d1d1f]'
+                  }`}
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+
             {/* Unread Client Product Notes Notification Button */}
             <button
               type="button"
@@ -1387,7 +1540,15 @@ export const ClientAreaPortal: React.FC<ClientAreaPortalProps> = ({
               }`}
             >
               <Bell className="w-4 h-4 text-[#0071e3]" />
-              <span>Product Notes ({unreadProductNotesCount} Unread)</span>
+              <span>
+                {tr(
+                  lang,
+                  `Product Notes (${unreadProductNotesCount} Unread)`,
+                  `Заметки по продуктам (${unreadProductNotesCount} новых)`,
+                  `Нотатки по продуктах (${unreadProductNotesCount} нових)`,
+                  `הערות מוצר (${unreadProductNotesCount} שלא נקראו)`
+                )}
+              </span>
             </button>
 
             <button
@@ -1399,7 +1560,9 @@ export const ClientAreaPortal: React.FC<ClientAreaPortalProps> = ({
               className="px-4 py-2.5 rounded-full bg-[#1d1d1f] hover:bg-red-600 text-white text-xs font-semibold flex items-center gap-2 cursor-pointer transition-colors"
             >
               <X className="w-4 h-4" />
-              <span>Exit Admin</span>
+              <span>
+                {tr(lang, 'Exit Admin', 'Выйти из Админ-панели', 'Вийти з Адмін-панелі', 'יציאה מניהול')}
+              </span>
             </button>
           </div>
         </header>
@@ -1412,7 +1575,13 @@ export const ClientAreaPortal: React.FC<ClientAreaPortalProps> = ({
               {/* Active Client Selector */}
               <div className="p-4 rounded-2xl bg-[#f5f5f7] border border-black/[0.05] space-y-2">
                 <label className="block text-[11px] font-semibold uppercase tracking-wider text-[#0071e3]">
-                  Active Client Workspace
+                  {tr(
+                    lang,
+                    'Active Client Workspace',
+                    'Активный Клиентский Профиль',
+                    'Активний Клієнтський Профіль',
+                    'סביבת עבודה פעילה של לקוח'
+                  )}
                 </label>
                 <select
                   value={currentWorkspace.account.id}
@@ -1426,7 +1595,8 @@ export const ClientAreaPortal: React.FC<ClientAreaPortalProps> = ({
                   ))}
                 </select>
                 <div className="text-xs text-[#6e6e73] pt-1">
-                  Contact: <strong className="text-[#1d1d1f]">{currentWorkspace.account.contactName}</strong>
+                  {tr(lang, 'Contact:', 'Контакт:', 'Контакт:', 'איש קשר:')}{' '}
+                  <strong className="text-[#1d1d1f]">{currentWorkspace.account.contactName}</strong>
                 </div>
               </div>
 
@@ -1435,45 +1605,93 @@ export const ClientAreaPortal: React.FC<ClientAreaPortalProps> = ({
                 {[
                   {
                     id: 'clients_users',
-                    label: '1. Clients & Logins',
+                    label: tr(
+                      lang,
+                      '1. Clients & Logins',
+                      '1. Клиенты и Логины',
+                      '1. Клієнти та Логіни',
+                      '1. לקוחות ופרטי כניסה'
+                    ),
                     icon: UserPlus,
                   },
                   {
                     id: 'visitor_chats',
-                    label: '2. Visitor Live Chats',
+                    label: tr(
+                      lang,
+                      '2. Visitor Live Chats',
+                      '2. Чаты Посетителей Сайта',
+                      '2. Чати Відвідувачів Сайту',
+                      '2. צ׳אטים של מבקרים באתר'
+                    ),
                     icon: Sparkles,
                     badge: unreadVisitorChatsCount,
                   },
                   {
                     id: 'product_notes',
-                    label: '3. Product Notes',
+                    label: tr(
+                      lang,
+                      '3. Product Notes',
+                      '3. Заметки к Продуктам',
+                      '3. Нотатки до Продуктів',
+                      '3. הערות מוצר מלקוחות'
+                    ),
                     icon: StickyNote,
                     badge: unreadProductNotesCount,
                   },
                   {
                     id: 'live_chat',
-                    label: '4. Client Area Chat',
+                    label: tr(
+                      lang,
+                      '4. Client Area Chat',
+                      '4. Чат с Клиентом',
+                      '4. Чат з Клієнтом',
+                      '4. צ׳אט אזור לקוחות'
+                    ),
                     icon: MessageSquare,
                     badge: unreadAdminChatCount,
                   },
                   {
                     id: 'products_progress',
-                    label: '5. Products & Progress',
+                    label: tr(
+                      lang,
+                      '5. Products & Progress',
+                      '5. Продукты и Прогресс',
+                      '5. Продукти та Прогрес',
+                      '5. מוצרים והתקדמות'
+                    ),
                     icon: Sliders,
                   },
                   {
                     id: 'timelines_docs',
-                    label: '6. Timelines & Docs',
+                    label: tr(
+                      lang,
+                      '6. Timelines & Docs',
+                      '6. Этапы и Документы',
+                      '6. Етапи та Документи',
+                      '6. אבני דרך ומסמכים'
+                    ),
                     icon: Milestone,
                   },
                   {
                     id: 'tasks_billing',
-                    label: '7. Tasks & Billing',
+                    label: tr(
+                      lang,
+                      '7. Tasks & Billing',
+                      '7. Задачи и Счета',
+                      '7. Задачі та Рахунки',
+                      '7. משימות וחיובים'
+                    ),
                     icon: CreditCard,
                   },
                   {
                     id: 'contact_channels',
-                    label: '8. Contact Buttons',
+                    label: tr(
+                      lang,
+                      '8. Contact Buttons',
+                      '8. Кнопки Контактов',
+                      '8. Кнопки Контактів',
+                      '8. כפתורי יצירת קשר'
+                    ),
                     icon: PhoneCall,
                   },
                 ].map((tab) => {
@@ -1515,7 +1733,8 @@ export const ClientAreaPortal: React.FC<ClientAreaPortalProps> = ({
             </div>
 
             <div className="hidden lg:block pt-4 border-t border-black/[0.06] text-xs text-[#6e6e73]">
-              Managed Clients: <strong className="text-[#1d1d1f]">{workspaces.length}</strong>
+              {tr(lang, 'Managed Clients:', 'Всего клиентов:', 'Усього клієнтів:', 'לקוחות מנוהלים:')}{' '}
+              <strong className="text-[#1d1d1f]">{workspaces.length}</strong>
             </div>
           </aside>
 
@@ -1526,7 +1745,13 @@ export const ClientAreaPortal: React.FC<ClientAreaPortalProps> = ({
                 <div className="flex items-center gap-3">
                   <Bell className="w-5 h-5 text-amber-600 shrink-0" />
                   <span className="text-sm font-semibold text-amber-900">
-                    You have {unreadProductNotesCount} unread Product Note(s) from clients waiting for review.
+                    {tr(
+                      lang,
+                      `You have ${unreadProductNotesCount} unread Product Note(s) from clients waiting for review.`,
+                      `У вас ${unreadProductNotesCount} непрочитанных заметок от клиентов по продуктам.`,
+                      `У вас ${unreadProductNotesCount} непрочитаних нотаток від клієнтів щодо продуктів.`,
+                      `יש לך ${unreadProductNotesCount} הערות מוצר חדשות מלקוחות הממתינות לבדיקה.`
+                    )}
                   </span>
                 </div>
                 <button
@@ -1534,7 +1759,13 @@ export const ClientAreaPortal: React.FC<ClientAreaPortalProps> = ({
                   onClick={() => setAdminSubTab('product_notes')}
                   className="px-4 py-2 rounded-full bg-amber-500 hover:bg-amber-600 text-white text-xs font-semibold cursor-pointer"
                 >
-                  View Product Notes →
+                  {tr(
+                    lang,
+                    'View Product Notes →',
+                    'Открыть заметки →',
+                    'Відкрити нотатки →',
+                    'צפה בהערות מוצר ←'
+                  )}
                 </button>
               </div>
             )}
@@ -1547,7 +1778,7 @@ export const ClientAreaPortal: React.FC<ClientAreaPortalProps> = ({
                   onClick={() => setAdminCreatedSuccess(null)}
                   className="text-emerald-900 underline ms-4 cursor-pointer"
                 >
-                  Dismiss
+                  {tr(lang, 'Dismiss', 'Закрыть', 'Закрити', 'סגור')}
                 </button>
               </div>
             )}
@@ -1558,7 +1789,13 @@ export const ClientAreaPortal: React.FC<ClientAreaPortalProps> = ({
                 <div className="xl:col-span-7 space-y-5">
                   <div className="flex flex-wrap items-center justify-between gap-3">
                     <h2 className="text-xl font-bold tracking-tight text-[#1d1d1f] m-0">
-                      Client Directory ({filteredAdminWorkspaces.length})
+                      {tr(
+                        lang,
+                        `Client Directory (${filteredAdminWorkspaces.length})`,
+                        `Список Клиентов (${filteredAdminWorkspaces.length})`,
+                        `Список Клієнтів (${filteredAdminWorkspaces.length})`,
+                        `רשימת לקוחות (${filteredAdminWorkspaces.length})`
+                      )}
                     </h2>
                     <div className="inline-flex items-center gap-1 bg-white p-1 rounded-full border border-black/[0.07]">
                       {(['All', 'Ukraine', 'Israel'] as const).map((m) => (
@@ -1572,7 +1809,11 @@ export const ClientAreaPortal: React.FC<ClientAreaPortalProps> = ({
                               : 'text-[#6e6e73]'
                           }`}
                         >
-                          {m}
+                          {m === 'All'
+                            ? tr(lang, 'All', 'Все', 'Усі', 'הכל')
+                            : m === 'Ukraine'
+                            ? tr(lang, 'Ukraine', 'Украина', 'Україна', 'אוקראינה')
+                            : tr(lang, 'Israel', 'Израиль', 'Ізраїль', 'ישראל')}
                         </button>
                       ))}
                     </div>
@@ -1605,7 +1846,8 @@ export const ClientAreaPortal: React.FC<ClientAreaPortalProps> = ({
                             </div>
                             <div className="flex items-center gap-3">
                               <span className="px-3 py-1 rounded-full bg-[#0071e3]/10 text-[#0071e3] text-xs font-bold tabular-nums">
-                                {ws.account.overallProgress}% Complete
+                                {ws.account.overallProgress}%{' '}
+                                {tr(lang, 'Complete', 'Готово', 'Готово', 'הושלם')}
                               </span>
                               {workspaces.length > 1 && (
                                 <button
@@ -1615,7 +1857,7 @@ export const ClientAreaPortal: React.FC<ClientAreaPortalProps> = ({
                                     handleAdminDeleteClient(ws.account.id);
                                   }}
                                   className="p-1.5 text-[#86868b] hover:text-red-500 cursor-pointer"
-                                  title="Delete Client"
+                                  title={tr(lang, 'Delete Client', 'Удалить клиента', 'Видалити клієнта', 'מחק לקוח')}
                                 >
                                   <Trash2 className="w-4 h-4" />
                                 </button>
@@ -1625,21 +1867,27 @@ export const ClientAreaPortal: React.FC<ClientAreaPortalProps> = ({
 
                           <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 pt-3 border-t border-black/[0.05] text-xs">
                             <div className="rounded-xl bg-[#f5f5f7] px-3 py-2">
-                              <span className="text-[#6e6e73]">Username: </span>
+                              <span className="text-[#6e6e73]">
+                                {tr(lang, 'Username: ', 'Логин: ', 'Логін: ', 'משתמש: ')}
+                              </span>
                               <strong className="text-[#0071e3] font-mono">
                                 {ws.privateInfo.loginUsername}
                               </strong>
                             </div>
                             <div className="rounded-xl bg-[#f5f5f7] px-3 py-2">
-                              <span className="text-[#6e6e73]">Password: </span>
+                              <span className="text-[#6e6e73]">
+                                {tr(lang, 'Password: ', 'Пароль: ', 'Пароль: ', 'סיסמה: ')}
+                              </span>
                               <strong className="text-[#1d1d1f] font-mono">
                                 {ws.privateInfo.loginPassword}
                               </strong>
                             </div>
                             <div className="rounded-xl bg-[#f5f5f7] px-3 py-2 flex items-center justify-between">
-                              <span className="text-[#6e6e73]">Activity:</span>
+                              <span className="text-[#6e6e73]">
+                                {tr(lang, 'Activity:', 'Активность:', 'Активність:', 'פעילות:')}
+                              </span>
                               <strong className="text-[#1d1d1f]">
-                                {clientNotesCount} notes · {ws.messages.length} msgs
+                                {clientNotesCount} · {ws.messages.length}
                               </strong>
                             </div>
                           </div>
@@ -1654,12 +1902,18 @@ export const ClientAreaPortal: React.FC<ClientAreaPortalProps> = ({
                     className="p-6 rounded-3xl bg-white border border-black/[0.06] space-y-4 shadow-xs"
                   >
                     <div className="text-sm font-bold text-[#0071e3]">
-                      Edit Selected Client Profile &amp; Login — {currentWorkspace.account.businessName}
+                      {tr(
+                        lang,
+                        `Edit Selected Client Profile & Login — ${currentWorkspace.account.businessName}`,
+                        `Редактировать профиль и логин клиента — ${currentWorkspace.account.businessName}`,
+                        `Редагувати профіль та логін клієнта — ${currentWorkspace.account.businessName}`,
+                        `עריכת פרופיל ופרטי כניסה ללקוח — ${currentWorkspace.account.businessName}`
+                      )}
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div>
                         <label className="block text-xs font-semibold text-[#6e6e73] mb-1">
-                          Business Name
+                          {tr(lang, 'Business Name', 'Название компании', 'Назва компанії', 'שם העסק')}
                         </label>
                         <input
                           type="text"
@@ -1670,7 +1924,7 @@ export const ClientAreaPortal: React.FC<ClientAreaPortalProps> = ({
                       </div>
                       <div>
                         <label className="block text-xs font-semibold text-[#6e6e73] mb-1">
-                          Contact Name
+                          {tr(lang, 'Contact Name', 'Контактное лицо', 'Контактна особа', 'איש קשר')}
                         </label>
                         <input
                           type="text"
@@ -1681,7 +1935,7 @@ export const ClientAreaPortal: React.FC<ClientAreaPortalProps> = ({
                       </div>
                       <div>
                         <label className="block text-xs font-bold text-[#0071e3] mb-1">
-                          Client Login Username
+                          {tr(lang, 'Client Login Username', 'Логин для входа клиента', 'Логін для входу клієнта', 'שם משתמש לכניסת לקוח')}
                         </label>
                         <input
                           type="text"
@@ -1693,7 +1947,7 @@ export const ClientAreaPortal: React.FC<ClientAreaPortalProps> = ({
                       </div>
                       <div>
                         <label className="block text-xs font-bold text-[#0071e3] mb-1">
-                          Client Login Password
+                          {tr(lang, 'Client Login Password', 'Пароль для входа клиента', 'Пароль для входу клієнта', 'סיסמה לכניסת לקוח')}
                         </label>
                         <input
                           type="text"
@@ -1708,7 +1962,13 @@ export const ClientAreaPortal: React.FC<ClientAreaPortalProps> = ({
                       type="submit"
                       className="px-5 py-2.5 rounded-full bg-[#0071e3] hover:bg-[#0077ed] text-white text-xs sm:text-sm font-semibold cursor-pointer"
                     >
-                      Save Client Profile &amp; Credentials
+                      {tr(
+                        lang,
+                        'Save Client Profile & Credentials',
+                        'Сохранить профиль и данные входа',
+                        'Зберегти профіль та дані входу',
+                        'שמור פרופיל ופרטי כניסה'
+                      )}
                     </button>
                   </form>
                 </div>
@@ -1720,13 +1980,21 @@ export const ClientAreaPortal: React.FC<ClientAreaPortalProps> = ({
                 >
                   <div className="flex items-center gap-2 text-base font-bold text-[#1d1d1f]">
                     <UserPlus className="w-5 h-5 text-[#0071e3]" />
-                    <span>Create New Client User &amp; Workspace</span>
+                    <span>
+                      {tr(
+                        lang,
+                        'Create New Client User & Workspace',
+                        'Создать Нового Клиента и Кабинет',
+                        'Створити Нового Клієнта та Кабінет',
+                        'יצירת משתמש וסביבת לקוח חדשה'
+                      )}
+                    </span>
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                     <div>
                       <label className="block text-xs font-semibold text-[#6e6e73] mb-1">
-                        Business Name *
+                        {tr(lang, 'Business Name *', 'Название бизнеса *', 'Назва бізнесу *', 'שם העסק *')}
                       </label>
                       <input
                         type="text"
@@ -1739,7 +2007,7 @@ export const ClientAreaPortal: React.FC<ClientAreaPortalProps> = ({
                     </div>
                     <div>
                       <label className="block text-xs font-semibold text-[#6e6e73] mb-1">
-                        Contact Person *
+                        {tr(lang, 'Contact Person *', 'Контактное лицо *', 'Контактна особа *', 'איש קשר *')}
                       </label>
                       <input
                         type="text"
@@ -1755,7 +2023,7 @@ export const ClientAreaPortal: React.FC<ClientAreaPortalProps> = ({
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 rounded-2xl bg-[#0071e3]/[0.06] p-4 border border-[#0071e3]/20">
                     <div>
                       <label className="block text-xs font-bold text-[#0071e3] mb-1">
-                        Assign Client Username *
+                        {tr(lang, 'Assign Client Username *', 'Логин клиента *', 'Логін клієнта *', 'שם משתמש ללקוח *')}
                       </label>
                       <input
                         type="text"
@@ -1768,7 +2036,7 @@ export const ClientAreaPortal: React.FC<ClientAreaPortalProps> = ({
                     </div>
                     <div>
                       <label className="block text-xs font-bold text-[#0071e3] mb-1">
-                        Assign Client Password *
+                        {tr(lang, 'Assign Client Password *', 'Пароль клиента *', 'Пароль клієнта *', 'סיסמה ללקוח *')}
                       </label>
                       <input
                         type="text"
@@ -1784,7 +2052,7 @@ export const ClientAreaPortal: React.FC<ClientAreaPortalProps> = ({
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                     <div>
                       <label className="block text-xs font-semibold text-[#6e6e73] mb-1">
-                        City
+                        {tr(lang, 'City', 'Город', 'Місто', 'עיר')}
                       </label>
                       <input
                         type="text"
@@ -1795,7 +2063,7 @@ export const ClientAreaPortal: React.FC<ClientAreaPortalProps> = ({
                     </div>
                     <div>
                       <label className="block text-xs font-semibold text-[#6e6e73] mb-1">
-                        Market
+                        {tr(lang, 'Market', 'Регион', 'Регіон', 'שוק יעד')}
                       </label>
                       <select
                         value={newClientMarket}
@@ -1804,15 +2072,15 @@ export const ClientAreaPortal: React.FC<ClientAreaPortalProps> = ({
                         }
                         className="w-full px-3.5 py-2.5 rounded-xl bg-[#f5f5f7] text-sm text-[#1d1d1f]"
                       >
-                        <option value="Ukraine">Ukraine</option>
-                        <option value="Israel">Israel</option>
+                        <option value="Ukraine">{tr(lang, 'Ukraine', 'Украина', 'Україна', 'אוקראינה')}</option>
+                        <option value="Israel">{tr(lang, 'Israel', 'Израиль', 'Ізраїль', 'ישראל')}</option>
                       </select>
                     </div>
                   </div>
 
                   <div>
                     <label className="block text-xs font-semibold text-[#6e6e73] mb-1">
-                      System Package Plan
+                      {tr(lang, 'System Package Plan', 'Архитектурный план системы', 'Архітектурний план системи', 'תוכנית מערכת')}
                     </label>
                     <input
                       type="text"
@@ -1825,7 +2093,7 @@ export const ClientAreaPortal: React.FC<ClientAreaPortalProps> = ({
                   <div className="grid grid-cols-2 gap-3.5">
                     <div>
                       <label className="block text-xs font-semibold text-[#6e6e73] mb-1">
-                        BryTech Price ($ USD)
+                        {tr(lang, 'BryTech Price ($ USD)', 'Стоимость BryTech ($ USD)', 'Вартість BryTech ($ USD)', 'מחיר BryTech ($ USD)')}
                       </label>
                       <input
                         type="number"
@@ -1836,7 +2104,7 @@ export const ClientAreaPortal: React.FC<ClientAreaPortalProps> = ({
                     </div>
                     <div>
                       <label className="block text-xs font-semibold text-[#6e6e73] mb-1">
-                        Est. Agency Cost ($ USD)
+                        {tr(lang, 'Est. Agency Cost ($ USD)', 'Оценка агентств ($ USD)', 'Оцінка агенцій ($ USD)', 'עלות סוכנות משוערת ($ USD)')}
                       </label>
                       <input
                         type="number"
@@ -1851,7 +2119,13 @@ export const ClientAreaPortal: React.FC<ClientAreaPortalProps> = ({
                     type="submit"
                     className="w-full py-3.5 px-5 rounded-full bg-[#0071e3] hover:bg-[#0077ed] text-white font-semibold text-sm cursor-pointer transition-colors shadow-sm"
                   >
-                    + Create Client User &amp; Provision Portal
+                    {tr(
+                      lang,
+                      '+ Create Client User & Provision Portal',
+                      '+ Создать Клиента и Открыть Кабинет',
+                      '+ Створити Клієнта та Відкрити Кабінет',
+                      '+ צור משתמש לקוח והפעל פורטל'
+                    )}
                   </button>
                 </form>
               </div>
@@ -1863,10 +2137,22 @@ export const ClientAreaPortal: React.FC<ClientAreaPortalProps> = ({
                 <div className="flex flex-wrap items-center justify-between gap-4 rounded-3xl bg-white p-6 border border-black/[0.06]">
                   <div>
                     <h2 className="text-xl font-bold text-[#1d1d1f] m-0">
-                      Client Product Notes &amp; Notifications ({productNotes.length})
+                      {tr(
+                        lang,
+                        `Client Product Notes & Notifications (${productNotes.length})`,
+                        `Заметки клиентов по продуктам (${productNotes.length})`,
+                        `Нотатки клієнтів щодо продуктів (${productNotes.length})`,
+                        `הערות מוצר והתראות מלקוחות (${productNotes.length})`
+                      )}
                     </h2>
                     <p className="text-sm text-[#6e6e73] m-0 mt-1">
-                      Every note added by a client to any of their products appears here with real-time notifications.
+                      {tr(
+                        lang,
+                        'Every note added by a client to any of their products appears here with real-time notifications.',
+                        'Каждая заметка, добавленная клиентом к любому продукту, отображается здесь в реальном времени.',
+                        'Кожна нотатка, додана клієнтом до будь-якого продукту, відображається тут у реальному часі.',
+                        'כל הערה שלקוח מוסיף למוצר שלו מופיעה כאן בזמן אמת.'
+                      )}
                     </p>
                   </div>
                   {unreadProductNotesCount > 0 && (
@@ -1879,14 +2165,20 @@ export const ClientAreaPortal: React.FC<ClientAreaPortalProps> = ({
                       }
                       className="px-4 py-2.5 rounded-full bg-[#0071e3] text-white text-xs font-semibold cursor-pointer"
                     >
-                      Mark All as Read
+                      {tr(lang, 'Mark All as Read', 'Отметить все прочитанными', 'Позначити всі прочитаними', 'סמן הכל כנקרא')}
                     </button>
                   )}
                 </div>
 
                 {productNotes.length === 0 ? (
                   <div className="p-10 rounded-3xl bg-white border border-black/[0.06] text-center text-sm text-[#6e6e73]">
-                    No product notes submitted by clients yet.
+                    {tr(
+                      lang,
+                      'No product notes submitted by clients yet.',
+                      'Клиенты еще не оставляли заметок к продуктам.',
+                      'Клієнти ще не залишали нотаток до продуктів.',
+                      'טרם נשלחו הערות מוצר מלקוחות.'
+                    )}
                   </div>
                 ) : (
                   <div className="space-y-3">
@@ -1903,7 +2195,7 @@ export const ClientAreaPortal: React.FC<ClientAreaPortalProps> = ({
                           <div className="flex flex-wrap items-center gap-2 text-xs">
                             {!note.readByAdmin && (
                               <span className="px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-800 font-bold">
-                                NEW NOTE
+                                {tr(lang, 'NEW NOTE', 'НОВАЯ', 'НОВА', 'הערה חדשה')}
                               </span>
                             )}
                             <span className="font-bold text-[#0071e3]">
@@ -1911,11 +2203,11 @@ export const ClientAreaPortal: React.FC<ClientAreaPortalProps> = ({
                             </span>
                             <span className="text-[#86868b]">·</span>
                             <span className="font-semibold text-[#1d1d1f]">
-                              Product: {note.productName}
+                              {tr(lang, 'Product:', 'Продукт:', 'Продукт:', 'מוצר:')} {note.productName}
                             </span>
                             <span className="text-[#86868b]">·</span>
                             <span className="text-[#6e6e73]">
-                              By {note.authorName} at {note.createdAtIso}
+                              {note.authorName} · {note.createdAtIso}
                             </span>
                           </div>
                           <p className="text-base text-[#1d1d1f] font-medium m-0 leading-relaxed">
@@ -1930,7 +2222,7 @@ export const ClientAreaPortal: React.FC<ClientAreaPortalProps> = ({
                               onClick={() => handleAdminMarkNoteRead(note.id)}
                               className="px-4 py-2 rounded-full bg-[#0071e3] text-white text-xs font-semibold cursor-pointer"
                             >
-                              ✓ Mark Read
+                              {tr(lang, '✓ Mark Read', '✓ Прочитано', '✓ Прочитано', '✓ סמן כנקרא')}
                             </button>
                           )}
                           <button
@@ -1942,13 +2234,13 @@ export const ClientAreaPortal: React.FC<ClientAreaPortalProps> = ({
                             }}
                             className="px-4 py-2 rounded-full bg-[#f5f5f7] hover:bg-[#e8e8ed] text-[#1d1d1f] text-xs font-semibold cursor-pointer"
                           >
-                            Reply in Chat
+                            {tr(lang, 'Reply in Chat', 'Ответить в чате', 'Відповісти в чаті', 'השב בצ׳אט')}
                           </button>
                           <button
                             type="button"
                             onClick={() => handleAdminDeleteNote(note.id)}
                             className="p-2 text-[#86868b] hover:text-red-500 cursor-pointer"
-                            title="Delete Note"
+                            title={tr(lang, 'Delete Note', 'Удалить заметку', 'Видалити нотатку', 'מחק הערה')}
                           >
                             <Trash2 className="w-4 h-4" />
                           </button>
@@ -1965,7 +2257,13 @@ export const ClientAreaPortal: React.FC<ClientAreaPortalProps> = ({
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 h-[74vh]">
                 <div className="lg:col-span-4 rounded-3xl bg-white border border-black/[0.06] p-5 overflow-y-auto space-y-2.5">
                   <div className="text-xs font-semibold uppercase tracking-wider text-[#0071e3] mb-3">
-                    Active Client Conversations
+                    {tr(
+                      lang,
+                      'Active Client Conversations',
+                      'Активные Диалоги с Клиентами',
+                      'Активні Діалоги з Клієнтами',
+                      'שיחות פעילות עם לקוחות'
+                    )}
                   </div>
                   {workspaces.map((ws) => {
                     const lastMsg = ws.messages[ws.messages.length - 1];
@@ -1986,13 +2284,17 @@ export const ClientAreaPortal: React.FC<ClientAreaPortalProps> = ({
                             {ws.account.businessName}
                           </span>
                           <span className="text-xs text-[#0071e3] font-semibold">
-                            {ws.messages.length} msgs
+                            {ws.messages.length}
                           </span>
                         </div>
                         <div className="text-xs text-[#6e6e73] truncate mt-1">
                           {lastMsg
-                            ? `${lastMsg.senderRole === 'client' ? 'Client: ' : 'You: '}${lastMsg.text}`
-                            : 'No messages yet'}
+                            ? `${
+                                lastMsg.senderRole === 'client'
+                                  ? tr(lang, 'Client: ', 'Клиент: ', 'Клієнт: ', 'לקוח: ')
+                                  : tr(lang, 'You: ', 'Вы: ', 'Ви: ', 'אתה: ')
+                              }${lastMsg.text}`
+                            : tr(lang, 'No messages yet', 'Сообщений пока нет', 'Повідомлень ще немає', 'אין הודעות עדיין')}
                         </div>
                       </button>
                     );
@@ -2003,14 +2305,21 @@ export const ClientAreaPortal: React.FC<ClientAreaPortalProps> = ({
                   <div className="p-5 border-b border-black/[0.06] flex items-center justify-between">
                     <div>
                       <div className="text-base font-bold text-[#1d1d1f]">
-                        Live Chat with {currentWorkspace.account.businessName}
+                        {tr(
+                          lang,
+                          `Live Chat with ${currentWorkspace.account.businessName}`,
+                          `Прямой Чат с ${currentWorkspace.account.businessName}`,
+                          `Прямий Чат з ${currentWorkspace.account.businessName}`,
+                          `צ׳אט חי עם ${currentWorkspace.account.businessName}`
+                        )}
                       </div>
                       <div className="text-xs text-[#6e6e73]">
-                        Contact: {currentWorkspace.account.contactName} · Login: {currentWorkspace.privateInfo.loginUsername}
+                        {tr(lang, 'Contact:', 'Контакт:', 'Контакт:', 'איש קשר:')} {currentWorkspace.account.contactName} ·{' '}
+                        {tr(lang, 'Login:', 'Логин:', 'Логін:', 'משתמש:')} {currentWorkspace.privateInfo.loginUsername}
                       </div>
                     </div>
                     <span className="px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700">
-                      Real-Time Connected
+                      {tr(lang, 'Real-Time Connected', 'На связи онлайн', 'На зв’язку онлайн', 'מחובר בזמן אמת')}
                     </span>
                   </div>
 
@@ -2050,7 +2359,13 @@ export const ClientAreaPortal: React.FC<ClientAreaPortalProps> = ({
                       type="text"
                       value={adminChatInput}
                       onChange={(e) => setAdminChatInput(e.target.value)}
-                      placeholder={`Reply directly to ${currentWorkspace.account.contactName}...`}
+                      placeholder={tr(
+                        lang,
+                        `Reply directly to ${currentWorkspace.account.contactName}...`,
+                        `Ответить напрямую ${currentWorkspace.account.contactName}...`,
+                        `Відповісти напряму ${currentWorkspace.account.contactName}...`,
+                        `השב ישירות ל-${currentWorkspace.account.contactName}...`
+                      )}
                       className="flex-1 px-4 py-3 rounded-full bg-[#f5f5f7] text-sm text-[#1d1d1f] focus:outline-none focus:ring-2 focus:ring-[#0071e3]"
                     />
                     <button
@@ -2058,7 +2373,7 @@ export const ClientAreaPortal: React.FC<ClientAreaPortalProps> = ({
                       className="px-6 py-3 rounded-full bg-[#0071e3] hover:bg-[#0077ed] text-white text-xs sm:text-sm font-semibold flex items-center gap-2 cursor-pointer"
                     >
                       <Send className="w-4 h-4" />
-                      <span>Send Reply</span>
+                      <span>{tr(lang, 'Send Reply', 'Отправить', 'Надіслати', 'שלח תגובה')}</span>
                     </button>
                   </form>
                 </div>
@@ -2071,10 +2386,17 @@ export const ClientAreaPortal: React.FC<ClientAreaPortalProps> = ({
                 <div className="p-6 rounded-3xl bg-white border border-black/[0.06] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                   <div>
                     <div className="text-xs font-semibold text-[#0071e3]">
-                      Master Account Completion — {currentWorkspace.account.businessName}
+                      {tr(
+                        lang,
+                        `Master Account Completion — ${currentWorkspace.account.businessName}`,
+                        `Общая готовность системы — ${currentWorkspace.account.businessName}`,
+                        `Загальна готовність системи — ${currentWorkspace.account.businessName}`,
+                        `התקדמות מערכת כוללת — ${currentWorkspace.account.businessName}`
+                      )}
                     </div>
                     <div className="text-2xl sm:text-3xl font-bold text-[#1d1d1f] tabular-nums mt-1">
-                      {currentWorkspace.account.overallProgress}% Overall Progress
+                      {currentWorkspace.account.overallProgress}%{' '}
+                      {tr(lang, 'Overall Progress', 'Общий Прогресс', 'Загальний Прогрес', 'התקדמות כוללת')}
                     </div>
                   </div>
                   <div className="w-full sm:w-80">
@@ -2120,7 +2442,7 @@ export const ClientAreaPortal: React.FC<ClientAreaPortalProps> = ({
                               type="button"
                               onClick={() => handleAdminDeleteProduct(prod.id)}
                               className="p-1.5 text-[#86868b] hover:text-red-500 cursor-pointer"
-                              title="Delete Product"
+                              title={tr(lang, 'Delete Product', 'Удалить продукт', 'Видалити продукт', 'מחק מוצר')}
                             >
                               <Trash2 className="w-4 h-4" />
                             </button>
@@ -2153,10 +2475,10 @@ export const ClientAreaPortal: React.FC<ClientAreaPortalProps> = ({
                             }
                             className="px-3.5 py-2.5 rounded-xl bg-[#f5f5f7] text-sm text-[#1d1d1f]"
                           >
-                            <option value="onboarding">onboarding</option>
-                            <option value="in_progress">in_progress</option>
-                            <option value="review">review</option>
-                            <option value="live">live</option>
+                            <option value="onboarding">{tr(lang, 'onboarding', 'онбординг', 'онбординг', 'הטמעה')}</option>
+                            <option value="in_progress">{tr(lang, 'in_progress', 'в разработке', 'у розробці', 'בפיתוח')}</option>
+                            <option value="review">{tr(lang, 'review', 'на проверке', 'на перевірці', 'בבדיקה')}</option>
+                            <option value="live">{tr(lang, 'live', 'активен (live)', 'активний (live)', 'פעיל (Live)')}</option>
                           </select>
                           <input
                             type="text"
@@ -2175,7 +2497,8 @@ export const ClientAreaPortal: React.FC<ClientAreaPortalProps> = ({
 
                         <div className="flex items-center justify-between pt-3 border-t border-black/[0.06]">
                           <span className="text-xs text-[#6e6e73]">
-                            Client Notes on product: <strong className="text-[#0071e3]">{prodNotes.length}</strong>
+                            {tr(lang, 'Client Notes on product:', 'Заметок клиента:', 'Нотаток клієнта:', 'הערות לקוח:')}{' '}
+                            <strong className="text-[#0071e3]">{prodNotes.length}</strong>
                           </span>
                           <button
                             type="button"
@@ -2186,7 +2509,9 @@ export const ClientAreaPortal: React.FC<ClientAreaPortalProps> = ({
                                 : 'bg-[#f5f5f7] text-[#1d1d1f]'
                             }`}
                           >
-                            {prod.maintenanceMode ? 'Maintenance ON' : 'Live Mode'}
+                            {prod.maintenanceMode
+                              ? tr(lang, 'Maintenance ON', 'Обслуживание ВКЛ', 'Обслуговування УВІМК', 'מצב תחזוקה פעיל')
+                              : tr(lang, 'Live Mode', 'Боевой Режим', 'Робочий Режим', 'מצב פעיל')}
                           </button>
                         </div>
                       </div>
@@ -2200,7 +2525,7 @@ export const ClientAreaPortal: React.FC<ClientAreaPortalProps> = ({
                 >
                   <div className="sm:col-span-2">
                     <label className="block text-xs font-semibold text-[#6e6e73] mb-1">
-                      New Product Name
+                      {tr(lang, 'New Product Name', 'Название нового модуля/продукта', 'Назва нового модуля/продукту', 'שם מוצר / מודול חדש')}
                     </label>
                     <input
                       type="text"
@@ -2213,7 +2538,7 @@ export const ClientAreaPortal: React.FC<ClientAreaPortalProps> = ({
                   </div>
                   <div>
                     <label className="block text-xs font-semibold text-[#6e6e73] mb-1">
-                      Type
+                      {tr(lang, 'Type', 'Тип', 'Тип', 'סוג')}
                     </label>
                     <select
                       value={adminNewProdType}
@@ -2232,7 +2557,7 @@ export const ClientAreaPortal: React.FC<ClientAreaPortalProps> = ({
                   </div>
                   <div>
                     <label className="block text-xs font-semibold text-[#6e6e73] mb-1">
-                      Domain / Handle
+                      {tr(lang, 'Domain / Handle', 'Домен / Ссылка', 'Домен / Посилання', 'דומיין / קישור')}
                     </label>
                     <input
                       type="text"
@@ -2246,7 +2571,7 @@ export const ClientAreaPortal: React.FC<ClientAreaPortalProps> = ({
                     type="submit"
                     className="py-2.5 px-4 rounded-full bg-[#0071e3] text-white font-semibold text-sm cursor-pointer"
                   >
-                    + Add Product
+                    {tr(lang, '+ Add Product', '+ Добавить продукт', '+ Додати продукт', '+ הוסף מוצר')}
                   </button>
                 </form>
               </div>
@@ -2261,21 +2586,27 @@ export const ClientAreaPortal: React.FC<ClientAreaPortalProps> = ({
                     className="p-6 rounded-3xl bg-white border border-black/[0.06] space-y-3.5"
                   >
                     <div className="text-sm font-bold text-[#0071e3]">
-                      Add Project Milestone — {currentWorkspace.account.businessName}
+                      {tr(
+                        lang,
+                        `Add Project Milestone — ${currentWorkspace.account.businessName}`,
+                        `Добавить Этап Проекта — ${currentWorkspace.account.businessName}`,
+                        `Додати Етап Проєкту — ${currentWorkspace.account.businessName}`,
+                        `הוסף אבן דרך לפרויקט — ${currentWorkspace.account.businessName}`
+                      )}
                     </div>
                     <input
                       type="text"
                       required
                       value={adminNewMilestoneTitle}
                       onChange={(e) => setAdminNewMilestoneTitle(e.target.value)}
-                      placeholder="Milestone Title *"
+                      placeholder={tr(lang, 'Milestone Title *', 'Название этапа *', 'Назва етапу *', 'שם אבן הדרך *')}
                       className="w-full px-3.5 py-2.5 rounded-xl bg-[#f5f5f7] text-sm text-[#1d1d1f]"
                     />
                     <input
                       type="text"
                       value={adminNewMilestoneDesc}
                       onChange={(e) => setAdminNewMilestoneDesc(e.target.value)}
-                      placeholder="Deliverable details"
+                      placeholder={tr(lang, 'Deliverable details', 'Описание результата', 'Опис результату', 'פרטי תוצר')}
                       className="w-full px-3.5 py-2.5 rounded-xl bg-[#f5f5f7] text-sm text-[#1d1d1f]"
                     />
                     <div className="grid grid-cols-2 gap-3">
@@ -2283,14 +2614,14 @@ export const ClientAreaPortal: React.FC<ClientAreaPortalProps> = ({
                         type="text"
                         value={adminNewMilestoneDue}
                         onChange={(e) => setAdminNewMilestoneDue(e.target.value)}
-                        placeholder="Due Date"
+                        placeholder={tr(lang, 'Due Date', 'Срок сдачи', 'Термін здачі', 'תאריך יעד')}
                         className="w-full px-3.5 py-2.5 rounded-xl bg-[#f5f5f7] text-sm text-[#1d1d1f]"
                       />
                       <button
                         type="submit"
                         className="py-2.5 px-4 rounded-full bg-[#0071e3] text-white font-semibold text-sm cursor-pointer"
                       >
-                        + Add Milestone
+                        {tr(lang, '+ Add Milestone', '+ Добавить этап', '+ Додати етап', '+ הוסף אבן דרך')}
                       </button>
                     </div>
                   </form>
@@ -2303,7 +2634,7 @@ export const ClientAreaPortal: React.FC<ClientAreaPortalProps> = ({
                       >
                         <div>
                           <div className="text-xs text-[#0071e3] font-semibold">
-                            {ms.productName} · Due: {ms.dueDate}
+                            {ms.productName} · {tr(lang, 'Due:', 'Срок:', 'Термін:', 'יעד:')} {ms.dueDate}
                           </div>
                           <div className="text-sm font-bold text-[#1d1d1f]">{ms.title}</div>
                         </div>
@@ -2318,10 +2649,10 @@ export const ClientAreaPortal: React.FC<ClientAreaPortalProps> = ({
                             }
                             className="px-3 py-1.5 rounded-xl bg-[#f5f5f7] text-xs font-semibold text-[#1d1d1f]"
                           >
-                            <option value="upcoming">upcoming</option>
-                            <option value="in_progress">in_progress</option>
-                            <option value="review">review</option>
-                            <option value="completed">completed</option>
+                            <option value="upcoming">{tr(lang, 'upcoming', 'предстоит', 'очікується', 'בקרוב')}</option>
+                            <option value="in_progress">{tr(lang, 'in_progress', 'в работе', 'у роботі', 'בביצוע')}</option>
+                            <option value="review">{tr(lang, 'review', 'на проверке', 'на перевірці', 'בבדיקה')}</option>
+                            <option value="completed">{tr(lang, 'completed', 'завершен', 'завершено', 'הושלם')}</option>
                           </select>
                           <button
                             type="button"
@@ -2342,14 +2673,20 @@ export const ClientAreaPortal: React.FC<ClientAreaPortalProps> = ({
                     className="p-6 rounded-3xl bg-white border border-black/[0.06] space-y-3.5"
                   >
                     <div className="text-sm font-bold text-[#0071e3]">
-                      Publish Document to Client Vault
+                      {tr(
+                        lang,
+                        'Publish Document to Client Vault',
+                        'Опубликовать Документ в Хранилище Клиента',
+                        'Опублікувати Документ у Сховище Клієнта',
+                        'פרסם מסמך לכספת הלקוח'
+                      )}
                     </div>
                     <input
                       type="text"
                       required
                       value={newDocTitle}
                       onChange={(e) => setNewDocTitle(e.target.value)}
-                      placeholder="Document Title *"
+                      placeholder={tr(lang, 'Document Title *', 'Название документа *', 'Назва документа *', 'כותרת המסמך *')}
                       className="w-full px-3.5 py-2.5 rounded-xl bg-[#f5f5f7] text-sm text-[#1d1d1f]"
                     />
                     <div className="grid grid-cols-2 gap-3">
@@ -2380,7 +2717,7 @@ export const ClientAreaPortal: React.FC<ClientAreaPortalProps> = ({
                       type="submit"
                       className="w-full py-2.5 px-4 rounded-full bg-[#0071e3] text-white font-semibold text-sm cursor-pointer"
                     >
-                      + Publish Document
+                      {tr(lang, '+ Publish Document', '+ Опубликовать документ', '+ Опублікувати документ', '+ פרסם מסמך')}
                     </button>
                   </form>
 
@@ -2407,10 +2744,10 @@ export const ClientAreaPortal: React.FC<ClientAreaPortalProps> = ({
                             }
                             className="px-3 py-1.5 rounded-xl bg-[#f5f5f7] text-xs font-semibold text-[#1d1d1f]"
                           >
-                            <option value="draft">draft</option>
-                            <option value="pending_signature">pending_signature</option>
-                            <option value="approved">approved</option>
-                            <option value="archived">archived</option>
+                            <option value="draft">{tr(lang, 'draft', 'черновик', 'чернетка', 'טיוטה')}</option>
+                            <option value="pending_signature">{tr(lang, 'pending_signature', 'ждет подписи', 'очікує підпису', 'ממתין לחתימה')}</option>
+                            <option value="approved">{tr(lang, 'approved', 'утвержден', 'погоджено', 'מאושר')}</option>
+                            <option value="archived">{tr(lang, 'archived', 'в архиве', 'в архіві', 'בארכיון')}</option>
                           </select>
                           <button
                             type="button"
@@ -2436,7 +2773,13 @@ export const ClientAreaPortal: React.FC<ClientAreaPortalProps> = ({
                     className="p-6 rounded-3xl bg-white border border-black/[0.06] space-y-3.5"
                   >
                     <div className="text-sm font-bold text-[#0071e3]">
-                      Assign Engineering Task
+                      {tr(
+                        lang,
+                        'Assign Engineering Task',
+                        'Назначить Задачу Разработки',
+                        'Призначити Задачу Розробки',
+                        'הקצה משימת הנדסה ופיתוח'
+                      )}
                     </div>
                     <div className="flex gap-2">
                       <input
@@ -2444,7 +2787,7 @@ export const ClientAreaPortal: React.FC<ClientAreaPortalProps> = ({
                         required
                         value={newTaskTitle}
                         onChange={(e) => setNewTaskTitle(e.target.value)}
-                        placeholder="Task description..."
+                        placeholder={tr(lang, 'Task description...', 'Описание задачи...', 'Опис задачі...', 'תיאור המשימה...')}
                         className="flex-1 px-3.5 py-2.5 rounded-xl bg-[#f5f5f7] text-sm text-[#1d1d1f]"
                       />
                       <select
@@ -2456,15 +2799,15 @@ export const ClientAreaPortal: React.FC<ClientAreaPortalProps> = ({
                         }
                         className="px-3 py-2.5 rounded-xl bg-[#f5f5f7] text-sm text-[#1d1d1f]"
                       >
-                        <option value="Normal">Normal</option>
-                        <option value="High">High</option>
-                        <option value="Urgent">Urgent</option>
+                        <option value="Normal">{tr(lang, 'Normal', 'Обычный', 'Звичайний', 'רגיל')}</option>
+                        <option value="High">{tr(lang, 'High', 'Высокий', 'Високий', 'גבוה')}</option>
+                        <option value="Urgent">{tr(lang, 'Urgent', 'Срочный', 'Терміновий', 'דחוף')}</option>
                       </select>
                       <button
                         type="submit"
                         className="px-4 py-2.5 rounded-full bg-[#0071e3] text-white font-semibold text-xs cursor-pointer"
                       >
-                        + Add
+                        {tr(lang, '+ Add', '+ Добавить', '+ Додати', '+ הוסף')}
                       </button>
                     </div>
                   </form>
@@ -2508,14 +2851,26 @@ export const ClientAreaPortal: React.FC<ClientAreaPortalProps> = ({
                     className="p-6 rounded-3xl bg-white border border-black/[0.06] space-y-3.5"
                   >
                     <div className="text-sm font-bold text-[#0071e3]">
-                      Issue Client Invoice
+                      {tr(
+                        lang,
+                        'Issue Client Invoice',
+                        'Выставить Счет Клиенту',
+                        'Виставити Рахунок Клієнту',
+                        'הפק חשבונית ללקוח'
+                      )}
                     </div>
                     <input
                       type="text"
                       required
                       value={adminNewInvoiceTitle}
                       onChange={(e) => setAdminNewInvoiceTitle(e.target.value)}
-                      placeholder="Invoice Milestone Description"
+                      placeholder={tr(
+                        lang,
+                        'Invoice Milestone Description',
+                        'Описание этапа / назначение счета',
+                        'Опис етапу / призначення рахунку',
+                        'תיאור אבן דרך לחשבונית'
+                      )}
                       className="w-full px-3.5 py-2.5 rounded-xl bg-[#f5f5f7] text-sm text-[#1d1d1f]"
                     />
                     <div className="grid grid-cols-2 gap-3">
@@ -2530,7 +2885,7 @@ export const ClientAreaPortal: React.FC<ClientAreaPortalProps> = ({
                         type="submit"
                         className="py-2.5 px-4 rounded-full bg-[#0071e3] text-white font-semibold text-sm cursor-pointer"
                       >
-                        + Issue Invoice
+                        {tr(lang, '+ Issue Invoice', '+ Выставить счет', '+ Виставити рахунок', '+ הפק חשבונית')}
                       </button>
                     </div>
                   </form>
@@ -2544,7 +2899,7 @@ export const ClientAreaPortal: React.FC<ClientAreaPortalProps> = ({
                         <div>
                           <div className="font-bold text-[#1d1d1f]">{inv.title}</div>
                           <div className="text-xs text-[#6e6e73]">
-                            {inv.invoiceNumber} · ${inv.amountUsd} · Due: {inv.dueDate}
+                            {inv.invoiceNumber} · ${inv.amountUsd} · {tr(lang, 'Due:', 'Срок:', 'Термін:', 'לתשלום עד:')} {inv.dueDate}
                           </div>
                         </div>
                         <button
@@ -2556,7 +2911,9 @@ export const ClientAreaPortal: React.FC<ClientAreaPortalProps> = ({
                               : 'bg-amber-50 text-amber-800'
                           }`}
                         >
-                          {inv.status} (Toggle)
+                          {inv.status === 'Paid'
+                            ? tr(lang, 'Paid (Toggle)', 'Оплачен (Сменить)', 'Сплачено (Змінити)', 'שולם (החלף)')
+                            : tr(lang, 'Pending (Toggle)', 'Ожидает (Сменить)', 'Очікує (Змінити)', 'ממתין (החלף)')}
                         </button>
                       </div>
                     ))}
@@ -2565,18 +2922,36 @@ export const ClientAreaPortal: React.FC<ClientAreaPortalProps> = ({
               </div>
             )}
 
-            {/* ADMIN MODULE 7: WEBSITE CONTACT BUTTONS (TELEGRAM / WHATSAPP / CALL) */}
+            {/* ADMIN MODULE 7: WEBSITE CONTACT BUTTONS (TELEGRAM / WHATSAPP / INSTAGRAM / CALL) */}
             {adminSubTab === 'contact_channels' && (
               <div className="max-w-3xl space-y-6">
                 <div className="p-6 rounded-3xl bg-white border border-black/[0.06]">
                   <div className="text-xs font-semibold text-[#0071e3] mb-1">
-                    Live Website Messenger &amp; Call Controls
+                    {tr(
+                      lang,
+                      'Live Website Messenger & Call Controls',
+                      'Управление Мессенджерами и Телефоном на Сайте',
+                      'Управління Месенджерами та Телефоном на Сайті',
+                      'ניהול כפתורי מסנג׳ר וטלפון באתר'
+                    )}
                   </div>
                   <h2 className="text-2xl font-bold text-[#1d1d1f] m-0">
-                    Edit Telegram, WhatsApp &amp; Call Buttons
+                    {tr(
+                      lang,
+                      'Edit Telegram, WhatsApp, Instagram & Call Buttons',
+                      'Настройка Telegram, WhatsApp, Instagram и Телефона',
+                      'Налаштування Telegram, WhatsApp, Instagram та Телефону',
+                      'עריכת כפתורי טלגרם, וואטסאפ, אינסטגרם ושיחה ישירה'
+                    )}
                   </h2>
                   <p className="text-sm text-[#6e6e73] mt-1 mb-0">
-                    Changes saved here immediately update the inviting Telegram, WhatsApp, and Call cards on the main page and the dedicated Contact page.
+                    {tr(
+                      lang,
+                      'Changes saved here immediately update the Telegram, WhatsApp, Instagram, and Call cards across the website.',
+                      'Изменения мгновенно обновляют кнопки Telegram, WhatsApp, Instagram и Звонка на всех страницах сайта.',
+                      'Зміни миттєво оновлюють кнопки Telegram, WhatsApp, Instagram та Дзвінка на всіх сторінках сайту.',
+                      'שינויים שנשמרים כאן מעדכנים מיד את כפתורי הקשר בכל רחבי האתר.'
+                    )}
                   </p>
                 </div>
 
@@ -2585,7 +2960,13 @@ export const ClientAreaPortal: React.FC<ClientAreaPortalProps> = ({
                     e.preventDefault();
                     await realtimeChatHub.updateContactChannels(contactChannelsForm);
                     setAdminCreatedSuccess(
-                      'Telegram, WhatsApp, and Call buttons updated across the website!'
+                      tr(
+                        lang,
+                        'Telegram, WhatsApp, Instagram, and Call buttons updated across the website!',
+                        'Кнопки Telegram, WhatsApp, Instagram и Звонка успешно обновлены на сайте!',
+                        'Кнопки Telegram, WhatsApp, Instagram та Дзвінка успішно оновлено на сайті!',
+                        'כפתורי טלגרם, וואטסאפ, אינסטגרם וטלפון עודכנו בהצלחה באתר!'
+                      )
                     );
                     setTimeout(() => setAdminCreatedSuccess(null), 5000);
                     notifySynced('Contact Buttons Updated');
@@ -2595,7 +2976,7 @@ export const ClientAreaPortal: React.FC<ClientAreaPortalProps> = ({
                   {/* Telegram Button Config */}
                   <div className="p-5 rounded-2xl bg-[#f5f5f7] space-y-3.5">
                     <div className="text-xs font-bold text-[#0088cc]">
-                      1. Telegram Button Settings
+                      {tr(lang, '1. Telegram Button Settings', '1. Настройки Telegram', '1. Налаштування Telegram', '1. הגדרות כפתור טלגרם')}
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div>
@@ -2617,7 +2998,7 @@ export const ClientAreaPortal: React.FC<ClientAreaPortalProps> = ({
                       </div>
                       <div>
                         <label className="block text-xs font-semibold text-[#6e6e73] mb-1">
-                          Telegram Display Handle
+                          {tr(lang, 'Telegram Display Handle', 'Отображаемый ник Telegram', 'Відображуваний нік Telegram', 'שם תצוגה בטלגרם')}
                         </label>
                         <input
                           type="text"
@@ -2638,7 +3019,7 @@ export const ClientAreaPortal: React.FC<ClientAreaPortalProps> = ({
                   {/* WhatsApp Button Config */}
                   <div className="p-5 rounded-2xl bg-[#f5f5f7] space-y-3.5">
                     <div className="text-xs font-bold text-emerald-600">
-                      2. WhatsApp Button Settings
+                      {tr(lang, '2. WhatsApp Button Settings', '2. Настройки WhatsApp', '2. Налаштування WhatsApp', '2. הגדרות כפתור וואטסאפ')}
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div>
@@ -2660,7 +3041,7 @@ export const ClientAreaPortal: React.FC<ClientAreaPortalProps> = ({
                       </div>
                       <div>
                         <label className="block text-xs font-semibold text-[#6e6e73] mb-1">
-                          WhatsApp Display Text
+                          {tr(lang, 'WhatsApp Display Text', 'Отображаемый номер WhatsApp', 'Відображуваний номер WhatsApp', 'טקסט תצוגה בוואטסאפ')}
                         </label>
                         <input
                           type="text"
@@ -2681,7 +3062,7 @@ export const ClientAreaPortal: React.FC<ClientAreaPortalProps> = ({
                   {/* Instagram Button Config */}
                   <div className="p-5 rounded-2xl bg-[#f5f5f7] space-y-3.5">
                     <div className="text-xs font-bold text-pink-600">
-                      3. Instagram Button Settings
+                      {tr(lang, '3. Instagram Button Settings', '3. Настройки Instagram', '3. Налаштування Instagram', '3. הגדרות כפתור אינסטגרם')}
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div>
@@ -2703,7 +3084,7 @@ export const ClientAreaPortal: React.FC<ClientAreaPortalProps> = ({
                       </div>
                       <div>
                         <label className="block text-xs font-semibold text-[#6e6e73] mb-1">
-                          Instagram Display Handle
+                          {tr(lang, 'Instagram Display Handle', 'Отображаемый ник Instagram', 'Відображуваний нік Instagram', 'שם תצוגה באינסטגרם')}
                         </label>
                         <input
                           type="text"
@@ -2725,12 +3106,12 @@ export const ClientAreaPortal: React.FC<ClientAreaPortalProps> = ({
                   {/* Call Button Config */}
                   <div className="p-5 rounded-2xl bg-[#f5f5f7] space-y-3.5">
                     <div className="text-xs font-bold text-[#0071e3]">
-                      4. Direct Phone Call Button Settings
+                      {tr(lang, '4. Direct Phone Call Button Settings', '4. Настройки Прямого Звонка', '4. Налаштування Прямого Дзвінка', '4. הגדרות כפתור שיחה ישירה')}
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div>
                         <label className="block text-xs font-semibold text-[#6e6e73] mb-1">
-                          Phone Number (for tel: dialer)
+                          {tr(lang, 'Phone Number (for tel: dialer)', 'Номер телефона (для набора)', 'Номер телефону (для набору)', 'מספר טלפון לחיוג')}
                         </label>
                         <input
                           type="text"
@@ -2747,7 +3128,7 @@ export const ClientAreaPortal: React.FC<ClientAreaPortalProps> = ({
                       </div>
                       <div>
                         <label className="block text-xs font-semibold text-[#6e6e73] mb-1">
-                          Call Button Display Text
+                          {tr(lang, 'Call Button Display Text', 'Отображаемый номер телефона', 'Відображуваний номер телефону', 'טקסט תצוגה למספר טלפון')}
                         </label>
                         <input
                           type="text"
@@ -2769,7 +3150,13 @@ export const ClientAreaPortal: React.FC<ClientAreaPortalProps> = ({
                     type="submit"
                     className="w-full py-4 px-6 rounded-full bg-[#0071e3] hover:bg-[#0077ed] text-white font-semibold text-sm cursor-pointer transition-all shadow-md"
                   >
-                    Save &amp; Publish Contact Buttons to Website
+                    {tr(
+                      lang,
+                      'Save & Publish Contact Buttons to Website',
+                      'Сохранить и Опубликовать Контакты на Сайте',
+                      'Зберегти та Опублікувати Контакти на Сайті',
+                      'שמור ופרסם כפתורי קשר באתר'
+                    )}
                   </button>
                 </form>
               </div>
@@ -2780,7 +3167,13 @@ export const ClientAreaPortal: React.FC<ClientAreaPortalProps> = ({
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 h-[76vh]">
                 <div className="lg:col-span-4 rounded-3xl bg-white border border-black/[0.06] p-5 overflow-y-auto space-y-2.5">
                   <div className="text-xs font-semibold uppercase tracking-wider text-[#0071e3] mb-3">
-                    Website Visitor Sessions ({visitorChatList.length})
+                    {tr(
+                      lang,
+                      `Website Visitor Sessions (${visitorChatList.length})`,
+                      `Сессии Посетителей Сайта (${visitorChatList.length})`,
+                      `Сесії Відвідувачів Сайту (${visitorChatList.length})`,
+                      `שיחות מבקרים באתר (${visitorChatList.length})`
+                    )}
                   </div>
                   {visitorChatList.map((vSession) => {
                     const lastMsg = vSession.messages[vSession.messages.length - 1];
@@ -2817,16 +3210,20 @@ export const ClientAreaPortal: React.FC<ClientAreaPortalProps> = ({
                                 : 'bg-blue-100 text-[#0071e3]'
                             }`}
                           >
-                            {vSession.mode === 'human' ? 'LIVE HUMAN' : 'AI BOT'}
+                            {vSession.mode === 'human'
+                              ? tr(lang, 'LIVE HUMAN', 'ЖИВОЙ ЧАТ', 'ЖИВИЙ ЧАТ', 'נציג אנושי')
+                              : tr(lang, 'AI BOT', 'ИИ-БОТ', 'ШІ-БОТ', 'בוט AI')}
                           </span>
                         </div>
                         {vSession.visitorContact && (
                           <div className="text-[11px] font-semibold text-[#0071e3] mt-0.5">
-                            Contact: {vSession.visitorContact}
+                            {tr(lang, 'Contact:', 'Контакт:', 'Контакт:', 'קשר:')} {vSession.visitorContact}
                           </div>
                         )}
                         <div className="text-xs text-[#6e6e73] truncate mt-1">
-                          {lastMsg ? lastMsg.text : 'No messages yet'}
+                          {lastMsg
+                            ? lastMsg.text
+                            : tr(lang, 'No messages yet', 'Сообщений пока нет', 'Повідомлень ще немає', 'אין הודעות עדיין')}
                         </div>
                       </button>
                     );
@@ -2839,19 +3236,22 @@ export const ClientAreaPortal: React.FC<ClientAreaPortalProps> = ({
                       <div className="p-5 border-b border-black/[0.06] flex flex-wrap items-center justify-between gap-3">
                         <div>
                           <div className="text-base font-bold text-[#1d1d1f]">
-                            Visitor: {activeVisitorSession.visitorName} ({activeVisitorSession.lang.toUpperCase()})
+                            {tr(lang, 'Visitor:', 'Посетитель:', 'Відвідувач:', 'מבקר:')} {activeVisitorSession.visitorName} ({activeVisitorSession.lang.toUpperCase()})
                           </div>
                           <div className="text-xs text-[#6e6e73]">
-                            Contact: {activeVisitorSession.visitorContact || 'Not provided yet'} · Mode:{' '}
+                            {tr(lang, 'Contact:', 'Контакт:', 'Контакт:', 'פרטי קשר:')}{' '}
+                            {activeVisitorSession.visitorContact ||
+                              tr(lang, 'Not provided yet', 'Еще не указан', 'Ще не вказано', 'טרם הוזן')}{' '}
+                            · {tr(lang, 'Mode:', 'Режим:', 'Режим:', 'מצב:')}{' '}
                             <strong className="text-[#0071e3]">
                               {activeVisitorSession.mode === 'human'
-                                ? 'Direct Live Architect Chat'
-                                : 'Assisted by AI Bot'}
+                                ? tr(lang, 'Direct Live Architect Chat', 'Прямой чат с архитектором', 'Прямий чат з архітектором', 'צ׳אט ישיר עם אדריכל מערכת')
+                                : tr(lang, 'Assisted by AI Bot', 'Консультация ИИ-ассистента', 'Консультація ШІ-асистента', 'סיוע ראשוני ע״י בוט AI')}
                             </strong>
                           </div>
                         </div>
                         <span className="px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700">
-                          Real-Time Sync Active
+                          {tr(lang, 'Real-Time Sync Active', 'Синхронизация активна', 'Синхронізація активна', 'סנכרון חי פעיל')}
                         </span>
                       </div>
 
@@ -2893,7 +3293,13 @@ export const ClientAreaPortal: React.FC<ClientAreaPortalProps> = ({
                           type="text"
                           value={adminVisitorReplyInput}
                           onChange={(e) => setAdminVisitorReplyInput(e.target.value)}
-                          placeholder={`Reply live to ${activeVisitorSession.visitorName} (switches widget to Live Human Mode)...`}
+                          placeholder={tr(
+                            lang,
+                            `Reply live to ${activeVisitorSession.visitorName} (switches widget to Live Human Mode)...`,
+                            `Ответить вживую ${activeVisitorSession.visitorName} (переключает чат в режим живого диалога)...`,
+                            `Відповісти наживо ${activeVisitorSession.visitorName} (перемикає чат у режим живого діалогу)...`,
+                            `השב בלייב ל-${activeVisitorSession.visitorName} (מעביר את הצ׳אט למצב נציג אנושי)...`
+                          )}
                           className="flex-1 px-4 py-3 rounded-full bg-[#f5f5f7] text-sm text-[#1d1d1f] focus:outline-none focus:ring-2 focus:ring-[#0071e3]"
                         />
                         <button
@@ -2901,13 +3307,21 @@ export const ClientAreaPortal: React.FC<ClientAreaPortalProps> = ({
                           className="px-6 py-3 rounded-full bg-[#0071e3] hover:bg-[#0077ed] text-white text-xs sm:text-sm font-semibold flex items-center gap-2 cursor-pointer"
                         >
                           <Send className="w-4 h-4" />
-                          <span>Send Live Reply</span>
+                          <span>
+                            {tr(lang, 'Send Live Reply', 'Отправить ответ', 'Надіслати відповідь', 'שלח תגובה בלייב')}
+                          </span>
                         </button>
                       </form>
                     </>
                   ) : (
                     <div className="flex-1 flex items-center justify-center text-sm text-[#6e6e73]">
-                      Select a visitor conversation on the left to view and reply.
+                      {tr(
+                        lang,
+                        'Select a visitor conversation on the left to view and reply.',
+                        'Выберите диалог посетителя слева для просмотра и ответа.',
+                        'Оберіть діалог відвідувача ліворуч для перегляду та відповіді.',
+                        'בחר שיחת מבקר מהרשימה כדי לצפות ולהשיב.'
+                      )}
                     </div>
                   )}
                 </div>
@@ -2931,42 +3345,71 @@ export const ClientAreaPortal: React.FC<ClientAreaPortalProps> = ({
   }[] = [
     {
       id: 'dashboard',
-      label: 'Products & Notes',
-      shortLabel: 'Products',
+      label: tr(lang, 'Products & Notes', 'Продукты и Заметки', 'Продукти та Нотатки', 'מוצרים והערות'),
+      shortLabel: tr(lang, 'Products', 'Продукты', 'Продукти', 'מוצרים'),
       icon: LayoutDashboard,
     },
     {
       id: 'timelines',
-      label: 'Project Timelines',
-      shortLabel: 'Roadmap',
+      label: tr(lang, 'Project Timelines', 'Этапы Проекта', 'Етапи Проєкту', 'שלבי הפרויקט'),
+      shortLabel: tr(lang, 'Roadmap', 'Этапы', 'Етапи', 'שלבים'),
       icon: Milestone,
     },
     {
       id: 'documents',
-      label: 'Document Vault',
-      shortLabel: 'Docs',
+      label: tr(lang, 'Document Vault', 'Документы и ТЗ', 'Документи та ТЗ', 'כספת מסמכים'),
+      shortLabel: tr(lang, 'Docs', 'Док.', 'Док.', 'מסמכים'),
       icon: FileText,
     },
     {
       id: 'tasks',
-      label: 'Tasks & Bots',
-      shortLabel: 'Tasks',
+      label: tr(lang, 'Tasks & Bots', 'Задачи и Боты', 'Задачі та Боти', 'משימות ובוטים'),
+      shortLabel: tr(lang, 'Tasks', 'Задачи', 'Задачі', 'משימות'),
       icon: CheckSquare,
     },
     {
       id: 'chat',
-      label: 'Live Chat with Admin',
-      shortLabel: 'Live Chat',
+      label: tr(lang, 'Live Chat with Admin', 'Онлайн-Чат с Админом', 'Онлайн-Чат з Адміном', 'צ׳אט עם הנהלה'),
+      shortLabel: tr(lang, 'Live Chat', 'Чат', 'Чат', 'צ׳אט'),
       icon: MessageSquare,
       badge: unreadClientChatCount,
     },
     {
       id: 'billing',
-      label: 'Billing & Invoices',
-      shortLabel: 'Billing',
+      label: tr(lang, 'Billing & Invoices', 'Счета и Оплаты', 'Рахунки та Оплати', 'חשבוניות ותשלומים'),
+      shortLabel: tr(lang, 'Billing', 'Счета', 'Рахунки', 'חיובים'),
       icon: CreditCard,
     },
   ];
+
+  const translateStatusBadge = (rawStatus: string) => {
+    const clean = rawStatus.toLowerCase();
+    if (clean === 'live' || clean === 'active') {
+      return tr(lang, 'Live', 'Активен', 'Активний', 'פעיל');
+    }
+    if (clean === 'onboarding') {
+      return tr(lang, 'Onboarding', 'Онбординг', 'Онбординг', 'הטמעה');
+    }
+    if (clean === 'in_progress' || clean === 'in progress') {
+      return tr(lang, 'In Progress', 'В разработке', 'У розробці', 'בפיתוח');
+    }
+    if (clean === 'review' || clean === 'ready for review') {
+      return tr(lang, 'In Review', 'На проверке', 'На перевірці', 'בבדיקה');
+    }
+    if (clean === 'completed') {
+      return tr(lang, 'Completed', 'Завершен', 'Завершено', 'הושלם');
+    }
+    if (clean === 'upcoming') {
+      return tr(lang, 'Upcoming', 'Предстоит', 'Очікується', 'בקרוב');
+    }
+    if (clean === 'paid') {
+      return tr(lang, 'Paid', 'Оплачен', 'Сплачено', 'שולם');
+    }
+    if (clean === 'pending') {
+      return tr(lang, 'Pending', 'Ожидает оплаты', 'Очікує оплати', 'ממתין לתשלום');
+    }
+    return rawStatus.replace('_', ' ');
+  };
 
   return (
     <div
@@ -2983,7 +3426,7 @@ export const ClientAreaPortal: React.FC<ClientAreaPortalProps> = ({
         className="relative w-full max-w-[1840px] h-[100svh] md:h-[94vh] md:rounded-[32px] bg-[#f5f5f7] text-[#1d1d1f] border-0 md:border md:border-black/[0.08] shadow-[0_32px_90px_rgba(0,0,0,0.22)] flex flex-col overflow-hidden"
       >
         {/* Top Frosted Apple App Bar */}
-        <div className="bg-white/90 backdrop-blur-xl px-4 sm:px-7 py-4 flex items-center justify-between gap-3 border-b border-black/[0.06] shrink-0">
+        <div className="bg-white/90 backdrop-blur-xl px-4 sm:px-7 py-4 flex flex-wrap items-center justify-between gap-3 border-b border-black/[0.06] shrink-0">
           <div className="flex items-center gap-3.5 min-w-0">
             <div className="w-10 h-10 rounded-2xl bg-[#0071e3] text-white flex items-center justify-center font-bold text-sm shrink-0 shadow-xs">
               {currentWorkspace.account.businessName.slice(0, 2).toUpperCase()}
@@ -2994,7 +3437,8 @@ export const ClientAreaPortal: React.FC<ClientAreaPortalProps> = ({
                   {currentWorkspace.account.businessName}
                 </span>
                 <span className="hidden sm:inline-block px-2.5 py-0.5 rounded-full bg-[#0071e3]/10 text-xs font-bold text-[#0071e3]">
-                  {currentWorkspace.account.overallProgress}% Complete
+                  {currentWorkspace.account.overallProgress}%{' '}
+                  {tr(lang, 'Complete', 'Готово', 'Готово', 'הושלם')}
                 </span>
               </div>
               <div className="text-xs text-[#6e6e73] truncate">
@@ -3003,7 +3447,30 @@ export const ClientAreaPortal: React.FC<ClientAreaPortalProps> = ({
             </div>
           </div>
 
-          <div className="flex items-center gap-2.5 shrink-0">
+          <div className="flex flex-wrap items-center gap-2 sm:gap-2.5 shrink-0">
+            {/* 4-Language Switcher in Client Area Header */}
+            <div
+              className="flex items-center bg-[#f5f5f7] p-1 rounded-full border border-black/[0.06]"
+              role="group"
+              aria-label="Select Client Area Language"
+            >
+              {PORTAL_LANGUAGE_OPTIONS.map((opt) => (
+                <button
+                  key={opt.code}
+                  type="button"
+                  onClick={() => onChangeLang(opt.code)}
+                  title={opt.nativeName}
+                  className={`px-2.5 py-1 rounded-full text-xs font-bold cursor-pointer transition-all ${
+                    lang === opt.code
+                      ? 'bg-[#0071e3] text-white shadow-2xs'
+                      : 'text-[#6e6e73] hover:text-[#1d1d1f]'
+                  }`}
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+
             <div className="hidden sm:flex items-center bg-[#f5f5f7] p-1 rounded-full border border-black/[0.06]">
               {(['USD', 'UAH', 'ILS'] as const).map((c) => (
                 <button
@@ -3026,7 +3493,7 @@ export const ClientAreaPortal: React.FC<ClientAreaPortalProps> = ({
               onClick={() => setIsClientAuthenticated(false)}
               className="px-3.5 py-1.5 rounded-full bg-[#f5f5f7] hover:bg-[#e8e8ed] text-[#1d1d1f] text-xs font-semibold cursor-pointer transition-colors"
             >
-              Sign Out
+              {tr(lang, 'Sign Out', 'Выйти', 'Вийти', 'התנתק')}
             </button>
 
             <button
@@ -3048,7 +3515,7 @@ export const ClientAreaPortal: React.FC<ClientAreaPortalProps> = ({
                 <div className="p-4 rounded-2xl bg-[#f5f5f7] border border-black/[0.04]">
                   <div className="flex items-center justify-between text-xs mb-2">
                     <span className="text-[#6e6e73] font-semibold">
-                      Overall Completion
+                      {tr(lang, 'Overall Completion', 'Общая готовность', 'Загальна готовність', 'התקדמות כוללת')}
                     </span>
                     <span className="text-[#0071e3] font-bold tabular-nums text-sm">
                       {currentWorkspace.account.overallProgress}%
@@ -3063,7 +3530,8 @@ export const ClientAreaPortal: React.FC<ClientAreaPortalProps> = ({
                     />
                   </div>
                   <div className="text-xs text-[#6e6e73]">
-                    PM: <strong className="text-[#1d1d1f]">{currentWorkspace.account.assignedPm}</strong>
+                    {tr(lang, 'PM:', 'Менеджер:', 'Менеджер:', 'מנהל פרויקט:')}{' '}
+                    <strong className="text-[#1d1d1f]">{currentWorkspace.account.assignedPm}</strong>
                   </div>
                 </div>
 
@@ -3108,13 +3576,19 @@ export const ClientAreaPortal: React.FC<ClientAreaPortalProps> = ({
 
               <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-500/20">
                 <div className="text-xs font-semibold text-emerald-700">
-                  Your Business Savings
+                  {tr(lang, 'Your Business Savings', 'Экономия вашего бизнеса', 'Економія вашого бізнесу', 'החיסכון העסקי שלך')}
                 </div>
                 <div className="text-xl font-bold text-emerald-900 tabular-nums mt-0.5">
                   {formatMoney(savingsUsd)}
                 </div>
                 <div className="text-xs text-emerald-700/80 mt-0.5">
-                  vs. {formatMoney(currentWorkspace.account.estimatedAgencyCostUsd)} agency quote
+                  {tr(
+                    lang,
+                    `vs. ${formatMoney(currentWorkspace.account.estimatedAgencyCostUsd)} agency quote`,
+                    `против ${formatMoney(currentWorkspace.account.estimatedAgencyCostUsd)} у студий`,
+                    `проти ${formatMoney(currentWorkspace.account.estimatedAgencyCostUsd)} в агенцій`,
+                    `לעומת ${formatMoney(currentWorkspace.account.estimatedAgencyCostUsd)} הצעת סוכנות`
+                  )}
                 </div>
               </div>
             </aside>
@@ -3130,7 +3604,7 @@ export const ClientAreaPortal: React.FC<ClientAreaPortalProps> = ({
                   onClick={() => setNoteSubmittedToast(null)}
                   className="text-emerald-700 text-xs underline cursor-pointer"
                 >
-                  Close
+                  {tr(lang, 'Close', 'Закрыть', 'Закрити', 'סגור')}
                 </button>
               </div>
             )}
@@ -3155,10 +3629,22 @@ export const ClientAreaPortal: React.FC<ClientAreaPortalProps> = ({
                           {currentWorkspace.account.planName}
                         </div>
                         <h3 className="text-2xl sm:text-4xl font-bold tracking-tight m-0">
-                          Welcome, {currentWorkspace.account.contactName}
+                          {tr(
+                            lang,
+                            `Welcome, ${currentWorkspace.account.contactName}`,
+                            `Добро пожаловать, ${currentWorkspace.account.contactName}`,
+                            `Вітаємо, ${currentWorkspace.account.contactName}`,
+                            `ברוך הבא, ${currentWorkspace.account.contactName}`
+                          )}
                         </h3>
                         <p className="text-sm sm:text-base text-white/75 m-0 max-w-xl leading-relaxed">
-                          Track real-time completion across your products below. Attach notes directly to any product to notify the Admin or open Live Chat anytime.
+                          {tr(
+                            lang,
+                            'Track real-time completion across your products below. Attach notes directly to any product to notify the Admin or open Live Chat anytime.',
+                            'Отслеживайте готовность ваших модулей в реальном времени. Добавляйте заметки к любому продукту для уведомления администратора или открывайте онлайн-чат.',
+                            'Відстежуйте готовність ваших модулів у реальному часі. Додавайте нотатки до будь-якого продукту для сповіщення адміністратора або відкривайте онлайн-чат.',
+                            'עקוב בזמן אמת אחר התקדמות המוצרים שלך. הוסף הערות ישירות לכל מוצר כדי לעדכן את מנהל המערכת או פתח צ׳אט ישיר בכל עת.'
+                          )}
                         </p>
                         <div className="pt-2">
                           <button
@@ -3167,7 +3653,15 @@ export const ClientAreaPortal: React.FC<ClientAreaPortalProps> = ({
                             className="px-6 py-3 rounded-full bg-[#0071e3] hover:bg-[#0077ed] text-white text-xs sm:text-sm font-semibold inline-flex items-center gap-2 cursor-pointer transition-colors"
                           >
                             <MessageSquare className="w-4 h-4" />
-                            <span>Open Live Chat with Admin</span>
+                            <span>
+                              {tr(
+                                lang,
+                                'Open Live Chat with Admin',
+                                'Открыть онлайн-чат с администратором',
+                                'Відкрити онлайн-чат з адміністратором',
+                                'פתח צ׳אט חי עם מנהל המערכת'
+                              )}
+                            </span>
                           </button>
                         </div>
                       </div>
@@ -3180,7 +3674,13 @@ export const ClientAreaPortal: React.FC<ClientAreaPortalProps> = ({
                   {/* Products Grid with "Add Note to Product" */}
                   <div className="space-y-4">
                     <h4 className="text-xl sm:text-2xl font-bold tracking-tight text-[#1d1d1f] m-0">
-                      Your Products &amp; Product Notes
+                      {tr(
+                        lang,
+                        'Your Products & Product Notes',
+                        'Ваши Продукты и Заметки к Проекту',
+                        'Ваші Продукти та Нотатки до Проєкту',
+                        'המוצרים והערות הפרויקט שלך'
+                      )}
                     </h4>
 
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -3204,7 +3704,7 @@ export const ClientAreaPortal: React.FC<ClientAreaPortalProps> = ({
                                   {prod.type} · {prod.domainOrHandle}
                                 </span>
                                 <span className="px-3 py-1 rounded-full bg-[#0071e3]/10 text-xs font-bold text-[#0071e3] capitalize">
-                                  {prod.status.replace('_', ' ')}
+                                  {translateStatusBadge(prod.status)}
                                 </span>
                               </div>
 
@@ -3235,7 +3735,13 @@ export const ClientAreaPortal: React.FC<ClientAreaPortalProps> = ({
                               {notesForProduct.length > 0 && (
                                 <div className="mb-5 space-y-2">
                                   <div className="text-xs font-semibold text-[#6e6e73]">
-                                    Notes Sent to Admin ({notesForProduct.length})
+                                    {tr(
+                                      lang,
+                                      `Notes Sent to Admin (${notesForProduct.length})`,
+                                      `Заметки, отправленные админу (${notesForProduct.length})`,
+                                      `Нотатки, надіслані адміну (${notesForProduct.length})`,
+                                      `הערות שנשלחו למנהל (${notesForProduct.length})`
+                                    )}
                                   </div>
                                   {notesForProduct.map((n) => (
                                     <div
@@ -3245,7 +3751,9 @@ export const ClientAreaPortal: React.FC<ClientAreaPortalProps> = ({
                                       <div className="flex items-center justify-between text-[11px] text-[#6e6e73] mb-1">
                                         <span>{n.createdAtIso}</span>
                                         <span className="font-semibold text-[#0071e3]">
-                                          {n.readByAdmin ? 'Read by Admin ✓' : 'Sent to Admin'}
+                                          {n.readByAdmin
+                                            ? tr(lang, 'Read by Admin ✓', 'Прочитано админом ✓', 'Прочитано адміном ✓', 'נקרא ע״י מנהל ✓')
+                                            : tr(lang, 'Sent to Admin', 'Отправлено админу', 'Надіслано адміну', 'נשלח למנהל')}
                                         </span>
                                       </div>
                                       <div className="font-medium">{n.text}</div>
@@ -3258,7 +3766,13 @@ export const ClientAreaPortal: React.FC<ClientAreaPortalProps> = ({
                             {/* Add Note to Product Form */}
                             <div className="pt-4 border-t border-black/[0.06]">
                               <label className="block text-xs font-semibold text-[#6e6e73] mb-2">
-                                Add a Note for Admin on this Product
+                                {tr(
+                                  lang,
+                                  'Add a Note for Admin on this Product',
+                                  'Добавить заметку для администратора по этому продукту',
+                                  'Додати нотатку для адміністратора щодо цього продукту',
+                                  'הוסף הערה למנהל המערכת עבור מוצר זה'
+                                )}
                               </label>
                               <div className="flex gap-2">
                                 <input
@@ -3270,7 +3784,13 @@ export const ClientAreaPortal: React.FC<ClientAreaPortalProps> = ({
                                       [prod.id]: e.target.value,
                                     }))
                                   }
-                                  placeholder="Write a note or request for this product..."
+                                  placeholder={tr(
+                                    lang,
+                                    'Write a note or request for this product...',
+                                    'Напишите комментарий или запрос по продукту...',
+                                    'Напишіть коментар або запит щодо продукту...',
+                                    'כתוב הערה או בקשה עבור מוצר זה...'
+                                  )}
                                   className="flex-1 px-4 py-2.5 rounded-full bg-[#f5f5f7] border border-transparent focus:border-[#0071e3] focus:bg-white text-sm text-[#1d1d1f] focus:outline-none"
                                 />
                                 <button
@@ -3279,7 +3799,7 @@ export const ClientAreaPortal: React.FC<ClientAreaPortalProps> = ({
                                   className="px-5 py-2.5 rounded-full bg-[#0071e3] hover:bg-[#0077ed] text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer shrink-0 transition-colors"
                                 >
                                   <StickyNote className="w-3.5 h-3.5" />
-                                  <span>Add Note</span>
+                                  <span>{tr(lang, 'Add Note', 'Добавить', 'Додати', 'הוסף הערה')}</span>
                                 </button>
                               </div>
                             </div>
@@ -3304,10 +3824,22 @@ export const ClientAreaPortal: React.FC<ClientAreaPortalProps> = ({
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-3xl bg-white p-6 border border-black/[0.06]">
                     <div>
                       <h3 className="text-xl sm:text-2xl font-bold tracking-tight text-[#1d1d1f] m-0">
-                        Project Status Timelines
+                        {tr(
+                          lang,
+                          'Project Status Timelines',
+                          'Дорожная Карта и Этапы Проекта',
+                          'Дорожня Карта та Етапи Проєкту',
+                          'ציר זמן ושלבי הפרויקט'
+                        )}
                       </h3>
                       <p className="text-sm text-[#6e6e73] m-0 mt-1">
-                        Live delivery roadmap managed by your BryTech engineering team.
+                        {tr(
+                          lang,
+                          'Live delivery roadmap managed by your BryTech engineering team.',
+                          'Актуальный график разработки и запуска, управляемый инженерной командой BryTech.',
+                          'Актуальний графік розробки та запуску під управлінням інженерної команди BryTech.',
+                          'מפת דרכים חיה המנוהלת על ידי צוות ההנדסה של BryTech.'
+                        )}
                       </p>
                     </div>
                     <select
@@ -3316,7 +3848,13 @@ export const ClientAreaPortal: React.FC<ClientAreaPortalProps> = ({
                       className="px-4 py-2.5 rounded-full bg-[#f5f5f7] text-sm font-semibold text-[#1d1d1f]"
                     >
                       <option value="all">
-                        All Products ({currentWorkspace.timelines.length})
+                        {tr(
+                          lang,
+                          `All Products (${currentWorkspace.timelines.length})`,
+                          `Все продукты (${currentWorkspace.timelines.length})`,
+                          `Усі продукти (${currentWorkspace.timelines.length})`,
+                          `כל המוצרים (${currentWorkspace.timelines.length})`
+                        )}
                       </option>
                       {currentWorkspace.products.map((p) => (
                         <option key={p.id} value={p.id}>
@@ -3336,7 +3874,9 @@ export const ClientAreaPortal: React.FC<ClientAreaPortalProps> = ({
                           <div className="flex flex-wrap items-center gap-2 text-xs text-[#6e6e73]">
                             <span className="font-bold text-[#0071e3]">{ms.productName}</span>
                             <span>·</span>
-                            <span>Due: {ms.dueDate}</span>
+                            <span>
+                              {tr(lang, 'Due:', 'Срок:', 'Термін:', 'יעד:')} {ms.dueDate}
+                            </span>
                           </div>
                           <h4 className="text-lg sm:text-xl font-bold text-[#1d1d1f] m-0">
                             {ms.title}
@@ -3346,7 +3886,7 @@ export const ClientAreaPortal: React.FC<ClientAreaPortalProps> = ({
                           </p>
                         </div>
                         <span className="px-3.5 py-1.5 rounded-full bg-[#0071e3]/10 text-xs font-bold text-[#0071e3] capitalize shrink-0">
-                          {ms.status.replace('_', ' ')}
+                          {translateStatusBadge(ms.status)}
                         </span>
                       </div>
                     ))}
@@ -3367,10 +3907,22 @@ export const ClientAreaPortal: React.FC<ClientAreaPortalProps> = ({
                   <div className="rounded-3xl bg-white p-6 border border-black/[0.06] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                     <div>
                       <h3 className="text-xl sm:text-2xl font-bold tracking-tight text-[#1d1d1f] m-0">
-                        Document &amp; Architecture Vault
+                        {tr(
+                          lang,
+                          'Document & Architecture Vault',
+                          'Хранилище Документов и Архитектуры',
+                          'Сховище Документів та Архітектури',
+                          'כספת מסמכים וארכיטקטורה'
+                        )}
                       </h3>
                       <p className="text-sm text-[#6e6e73] m-0 mt-1">
-                        Contracts, architecture blueprints, and user guides for your systems.
+                        {tr(
+                          lang,
+                          'Contracts, architecture blueprints, and user guides for your systems.',
+                          'Договоры, архитектурные спецификации и инструкции для ваших систем.',
+                          'Договори, архітектурні специфікації та інструкції для ваших систем.',
+                          'חוזים, מסמכי אפיון ומדריכי משתמש עבור המערכות שלך.'
+                        )}
                       </p>
                     </div>
                     <div className="relative w-full sm:w-72">
@@ -3379,7 +3931,13 @@ export const ClientAreaPortal: React.FC<ClientAreaPortalProps> = ({
                         type="text"
                         value={docSearchQuery}
                         onChange={(e) => setDocSearchQuery(e.target.value)}
-                        placeholder="Search documents..."
+                        placeholder={tr(
+                          lang,
+                          'Search documents...',
+                          'Поиск документов...',
+                          'Пошук документів...',
+                          'חיפוש מסמכים...'
+                        )}
                         className="w-full pl-10 pr-4 py-2.5 rounded-full bg-[#f5f5f7] text-sm text-[#1d1d1f] focus:outline-none"
                       />
                     </div>
@@ -3408,7 +3966,7 @@ export const ClientAreaPortal: React.FC<ClientAreaPortalProps> = ({
                           className="px-5 py-2.5 rounded-full bg-[#f5f5f7] hover:bg-[#1d1d1f] text-[#1d1d1f] hover:text-white text-xs font-semibold flex items-center gap-2 cursor-pointer shrink-0 transition-colors"
                         >
                           <Eye className="w-4 h-4 text-[#0071e3]" />
-                          <span>View Details</span>
+                          <span>{tr(lang, 'View Details', 'Подробнее', 'Детальніше', 'צפה בפרטים')}</span>
                         </button>
                       </div>
                     ))}
@@ -3428,7 +3986,13 @@ export const ClientAreaPortal: React.FC<ClientAreaPortalProps> = ({
                 >
                   <div className="lg:col-span-7 space-y-4">
                     <h3 className="text-xl font-bold text-[#1d1d1f] m-0">
-                      Active Engineering Sprint Tasks
+                      {tr(
+                        lang,
+                        'Active Engineering Sprint Tasks',
+                        'Активные Задачи Разработки',
+                        'Активні Задачі Розробки',
+                        'משימות פיתוח והנדסה פעילות'
+                      )}
                     </h3>
                     {currentWorkspace.tasks.map((tk) => (
                       <div
@@ -3437,14 +4001,18 @@ export const ClientAreaPortal: React.FC<ClientAreaPortalProps> = ({
                       >
                         <div>
                           <div className="text-xs text-[#6e6e73] mb-1">
-                            <strong className="text-[#0071e3]">{tk.priority} Priority</strong> · {tk.productName}
+                            <strong className="text-[#0071e3]">
+                              {tk.priority}{' '}
+                              {tr(lang, 'Priority', 'Приоритет', 'Пріоритет', 'עדיפות')}
+                            </strong>{' '}
+                            · {tk.productName}
                           </div>
                           <div className="text-base font-bold text-[#1d1d1f]">
                             {tk.title}
                           </div>
                         </div>
                         <span className="px-3 py-1 rounded-full bg-[#f5f5f7] text-xs font-semibold text-[#1d1d1f] shrink-0">
-                          {tk.status}
+                          {translateStatusBadge(tk.status)}
                         </span>
                       </div>
                     ))}
@@ -3452,7 +4020,13 @@ export const ClientAreaPortal: React.FC<ClientAreaPortalProps> = ({
 
                   <div className="lg:col-span-5 space-y-4">
                     <h3 className="text-xl font-bold text-[#1d1d1f] m-0">
-                      Connected Automation Bots
+                      {tr(
+                        lang,
+                        'Connected Automation Bots',
+                        'Подключенные Боты Автоматизации',
+                        'Підключені Боти Автоматизації',
+                        'בוטים מחוברים לאוטומציה'
+                      )}
                     </h3>
                     {currentWorkspace.automations.map((auto) => (
                       <div
@@ -3469,14 +4043,23 @@ export const ClientAreaPortal: React.FC<ClientAreaPortalProps> = ({
                             </div>
                           </div>
                           <span className="px-2.5 py-1 rounded-full bg-emerald-50 text-xs font-bold text-emerald-700">
-                            {auto.active ? 'Active' : 'Paused'}
+                            {auto.active
+                              ? tr(lang, 'Active', 'Активен', 'Активний', 'פעיל')
+                              : tr(lang, 'Paused', 'Пауза', 'Пауза', 'מושהה')}
                           </span>
                         </div>
                         <div className="p-3 rounded-2xl bg-[#f5f5f7] text-xs font-mono text-[#1d1d1f]">
                           {auto.template}
                         </div>
                         <div className="text-xs font-semibold text-[#6e6e73]">
-                          {auto.runsThisMonth.toLocaleString()} automated runs this month
+                          {auto.runsThisMonth.toLocaleString()}{' '}
+                          {tr(
+                            lang,
+                            'automated runs this month',
+                            'автоматических срабатываний за месяц',
+                            'автоматичних спрацювань за місяць',
+                            'הרצות אוטומטיות החודש'
+                          )}
                         </div>
                       </div>
                     ))}
@@ -3501,15 +4084,27 @@ export const ClientAreaPortal: React.FC<ClientAreaPortalProps> = ({
                       </div>
                       <div>
                         <div className="text-base font-bold">
-                          Direct Online Chat with BryTech Admin
+                          {tr(
+                            lang,
+                            'Direct Online Chat with BryTech Admin',
+                            'Прямой Онлайн-Чат с Администратором BryTech',
+                            'Прямий Онлайн-Чат з Адміністратором BryTech',
+                            'צ׳אט ישיר עם מנהל המערכת של BryTech'
+                          )}
                         </div>
                         <div className="text-xs text-white/70">
-                          Messages are delivered directly to {currentWorkspace.account.assignedPm}
+                          {tr(
+                            lang,
+                            `Messages are delivered directly to ${currentWorkspace.account.assignedPm}`,
+                            `Сообщения доставляются напрямую менеджеру: ${currentWorkspace.account.assignedPm}`,
+                            `Повідомлення доставляються напряму менеджеру: ${currentWorkspace.account.assignedPm}`,
+                            `ההודעות נשלחות ישירות אל ${currentWorkspace.account.assignedPm}`
+                          )}
                         </div>
                       </div>
                     </div>
                     <span className="px-3 py-1 rounded-full bg-emerald-500/20 text-xs font-semibold text-emerald-300">
-                      Live Connected
+                      {tr(lang, 'Live Connected', 'На связи', 'На зв’язку', 'מחובר בלייב')}
                     </span>
                   </div>
 
@@ -3549,7 +4144,13 @@ export const ClientAreaPortal: React.FC<ClientAreaPortalProps> = ({
                       type="text"
                       value={clientChatInput}
                       onChange={(e) => setClientChatInput(e.target.value)}
-                      placeholder="Write a message directly to the Admin..."
+                      placeholder={tr(
+                        lang,
+                        'Write a message directly to the Admin...',
+                        'Напишите сообщение администратору...',
+                        'Напишіть повідомлення адміністратору...',
+                        'כתוב הודעה ישירות למנהל המערכת...'
+                      )}
                       className="flex-1 px-4 py-3 rounded-full bg-[#f5f5f7] text-sm text-[#1d1d1f] focus:outline-none focus:ring-2 focus:ring-[#0071e3]"
                     />
                     <button
@@ -3557,7 +4158,7 @@ export const ClientAreaPortal: React.FC<ClientAreaPortalProps> = ({
                       className="px-6 py-3 rounded-full bg-[#0071e3] hover:bg-[#0077ed] text-white text-xs sm:text-sm font-semibold flex items-center gap-2 cursor-pointer"
                     >
                       <Send className="w-4 h-4" />
-                      <span>Send</span>
+                      <span>{tr(lang, 'Send', 'Отправить', 'Надіслати', 'שלח')}</span>
                     </button>
                   </form>
                 </motion.div>
@@ -3576,7 +4177,7 @@ export const ClientAreaPortal: React.FC<ClientAreaPortalProps> = ({
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
                     <div className="rounded-3xl bg-white p-6 border border-black/[0.06]">
                       <div className="text-xs font-semibold text-[#6e6e73]">
-                        BryTech Investment
+                        {tr(lang, 'BryTech Investment', 'Инвестиция с BryTech', 'Інвестиція з BryTech', 'השקעה ב-BryTech')}
                       </div>
                       <div className="text-2xl sm:text-3xl font-bold text-[#1d1d1f] tabular-nums mt-1">
                         {formatMoney(currentWorkspace.account.brytechTotalPaidUsd)}
@@ -3584,7 +4185,7 @@ export const ClientAreaPortal: React.FC<ClientAreaPortalProps> = ({
                     </div>
                     <div className="rounded-3xl bg-white p-6 border border-black/[0.06]">
                       <div className="text-xs font-semibold text-[#6e6e73]">
-                        Traditional Agency Quote
+                        {tr(lang, 'Traditional Agency Quote', 'Оценка обычных агентств', 'Оцінка звичайних агенцій', 'הצעת מחיר של סוכנות רגילה')}
                       </div>
                       <div className="text-2xl sm:text-3xl font-bold text-[#86868b] line-through tabular-nums mt-1">
                         {formatMoney(currentWorkspace.account.estimatedAgencyCostUsd)}
@@ -3592,7 +4193,7 @@ export const ClientAreaPortal: React.FC<ClientAreaPortalProps> = ({
                     </div>
                     <div className="rounded-3xl bg-[#1d1d1f] text-white p-6">
                       <div className="text-xs font-semibold text-emerald-400">
-                        Net Business Savings
+                        {tr(lang, 'Net Business Savings', 'Чистая экономия бизнеса', 'Чиста економія бізнесу', 'חיסכון עסקי נטו')}
                       </div>
                       <div className="text-2xl sm:text-3xl font-bold text-emerald-400 tabular-nums mt-1">
                         {formatMoney(savingsUsd)}
@@ -3602,7 +4203,7 @@ export const ClientAreaPortal: React.FC<ClientAreaPortalProps> = ({
 
                   <div className="rounded-3xl bg-white border border-black/[0.06] p-6 space-y-3.5">
                     <h4 className="text-lg font-bold text-[#1d1d1f] m-0">
-                      Invoices &amp; Payment Status
+                      {tr(lang, 'Invoices & Payment Status', 'Счета и Статус Оплаты', 'Рахунки та Статус Оплати', 'חשבוניות וסטטוס תשלום')}
                     </h4>
                     {currentWorkspace.invoices.map((inv) => (
                       <div
@@ -3611,7 +4212,7 @@ export const ClientAreaPortal: React.FC<ClientAreaPortalProps> = ({
                       >
                         <div>
                           <div className="text-xs font-semibold text-[#6e6e73]">
-                            {inv.invoiceNumber} · Due: {inv.dueDate}
+                            {inv.invoiceNumber} · {tr(lang, 'Due:', 'Срок:', 'Термін:', 'לתשלום עד:')} {inv.dueDate}
                           </div>
                           <div className="text-base font-bold text-[#1d1d1f]">
                             {inv.title}
@@ -3628,7 +4229,7 @@ export const ClientAreaPortal: React.FC<ClientAreaPortalProps> = ({
                                 : 'bg-amber-50 text-amber-800'
                             }`}
                           >
-                            {inv.status}
+                            {translateStatusBadge(inv.status)}
                           </span>
                         </div>
                       </div>
@@ -3646,7 +4247,7 @@ export const ClientAreaPortal: React.FC<ClientAreaPortalProps> = ({
                 <div className="w-80 rounded-3xl bg-white border border-black/[0.08] shadow-2xl flex flex-col h-96 overflow-hidden">
                   <div className="bg-[#1d1d1f] text-white px-4 py-3.5 flex items-center justify-between">
                     <span className="text-xs font-semibold text-white">
-                      Live Chat with Admin
+                      {tr(lang, 'Live Chat with Admin', 'Онлайн-Чат с Админом', 'Онлайн-Чат з Адміном', 'צ׳אט עם הנהלה')}
                     </span>
                     <button
                       type="button"
@@ -3680,14 +4281,14 @@ export const ClientAreaPortal: React.FC<ClientAreaPortalProps> = ({
                       type="text"
                       value={clientChatInput}
                       onChange={(e) => setClientChatInput(e.target.value)}
-                      placeholder="Message Admin..."
+                      placeholder={tr(lang, 'Message Admin...', 'Сообщение админу...', 'Повідомлення адміну...', 'הודעה למנהל...')}
                       className="flex-1 px-3 py-2 rounded-full bg-[#f5f5f7] text-xs"
                     />
                     <button
                       type="submit"
                       className="px-3.5 py-2 rounded-full bg-[#0071e3] text-white text-xs font-semibold cursor-pointer"
                     >
-                      Send
+                      {tr(lang, 'Send', 'Отпр.', 'Надісл.', 'שלח')}
                     </button>
                   </form>
                 </div>
@@ -3698,7 +4299,7 @@ export const ClientAreaPortal: React.FC<ClientAreaPortalProps> = ({
                   className="px-5 py-3.5 rounded-full bg-[#0071e3] hover:bg-[#0077ed] text-white font-semibold text-xs sm:text-sm flex items-center gap-2 shadow-xl cursor-pointer transition-all"
                 >
                   <MessageSquare className="w-4 h-4" />
-                  <span>Live Chat with Admin</span>
+                  <span>{tr(lang, 'Live Chat with Admin', 'Онлайн-Чат с Админом', 'Онлайн-Чат з Адміном', 'צ׳אט עם הנהלה')}</span>
                 </button>
               )}
             </div>
@@ -3761,7 +4362,7 @@ export const ClientAreaPortal: React.FC<ClientAreaPortalProps> = ({
                 {previewDoc.summary}
               </p>
               <div className="p-3.5 rounded-2xl bg-[#f5f5f7] text-xs font-mono text-[#1d1d1f]">
-                File: {previewDoc.fileName} ({previewDoc.fileSize}) · Uploaded by {previewDoc.uploadedBy}
+                {tr(lang, 'File:', 'Файл:', 'Файл:', 'קובץ:')} {previewDoc.fileName} ({previewDoc.fileSize}) · {previewDoc.uploadedBy}
               </div>
               <div className="flex items-center justify-end">
                 <button
@@ -3769,7 +4370,7 @@ export const ClientAreaPortal: React.FC<ClientAreaPortalProps> = ({
                   onClick={() => setPreviewDoc(null)}
                   className="px-5 py-2.5 rounded-full bg-[#0071e3] text-white text-xs font-semibold cursor-pointer"
                 >
-                  Close Preview
+                  {tr(lang, 'Close Preview', 'Закрыть предпросмотр', 'Закрити перегляд', 'סגור תצוגה')}
                 </button>
               </div>
             </div>
