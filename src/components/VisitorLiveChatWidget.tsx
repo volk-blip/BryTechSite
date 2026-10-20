@@ -28,8 +28,42 @@ interface VisitorLiveChatWidgetProps {
 }
 
 const VISITOR_SESSION_STORAGE_KEY = 'brytech_active_visitor_session_v2';
-const FOUNDER_AVATAR_URL =
-  '/assets/aistudio/Gemini_Generated_Image_vhds4cvhds4cvhds_3072b664.jpg';
+
+/**
+ * Precision-cut 'B' Monogram Avatar from the official BryTech logo
+ */
+const BryTechMonogramAvatar: React.FC<{
+  size?: 'sm' | 'md' | 'lg';
+  isTyping?: boolean;
+}> = ({ size = 'md', isTyping = false }) => {
+  const px = size === 'sm' ? 28 : size === 'lg' ? 44 : 40;
+  return (
+    <div
+      className={`relative rounded-xl overflow-hidden flex items-center justify-center shrink-0 select-none transition-transform duration-300 ${
+        isTyping ? 'ring-2 ring-[#0071e3]/70 shadow-[0_0_16px_rgba(0,113,227,0.45)]' : ''
+      }`}
+      style={{ width: px, height: px }}
+    >
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 40 40"
+        fill="none"
+        width={px}
+        height={px}
+        className="w-full h-full"
+        aria-hidden="true"
+      >
+        <rect width="40" height="40" rx="10" fill="#FFFFFF" />
+        <path
+          d="M13 11 H23.5 C27 11 29.5 13 29.5 16 C29.5 18.2 28 19.8 25.5 20.3 C28.5 20.8 30.5 22.8 30.5 26 C30.5 29.5 27.5 31.5 23.5 31.5 H13 V11 Z 
+             M17.5 14.8 V18.5 H22.5 C24.5 18.5 25.5 17.5 25.5 16.5 C25.5 15.5 24.5 14.8 22.5 14.8 H17.5 Z 
+             M17.5 22.2 V27.5 H23 C25.2 27.5 26.2 26.5 26.2 25 C26.2 23.5 25.2 22.2 23 22.2 H17.5 Z"
+          fill="#000000"
+        />
+      </svg>
+    </div>
+  );
+};
 
 const WIDGET_COPY: Record<
   Language,
@@ -51,7 +85,9 @@ const WIDGET_COPY: Record<
     saveProfileBtn: string;
     inputPlaceholderBot: string;
     inputPlaceholderHuman: string;
+    botReading: string;
     botThinking: string;
+    seenLabel: string;
     onlineBadge: string;
     switchBackToBot: string;
     directChannelsLabel: string;
@@ -82,7 +118,9 @@ const WIDGET_COPY: Record<
     saveProfileBtn: 'Save',
     inputPlaceholderBot: 'Write a message...',
     inputPlaceholderHuman: 'Message Boris directly...',
-    botThinking: 'Alex is typing',
+    botReading: 'Alex is reading...',
+    botThinking: 'Alex is typing a reply',
+    seenLabel: 'Seen',
     onlineBadge: 'Online',
     switchBackToBot: 'Concierge',
     directChannelsLabel: 'Or open in your favorite app:',
@@ -112,7 +150,9 @@ const WIDGET_COPY: Record<
     saveProfileBtn: 'Ок',
     inputPlaceholderBot: 'Напишите сообщение...',
     inputPlaceholderHuman: 'Сообщение напрямую Борису...',
-    botThinking: 'Алекс печатает',
+    botReading: 'Алекс читает сообщение...',
+    botThinking: 'Алекс печатает ответ',
+    seenLabel: 'Прочитано',
     onlineBadge: 'В сети',
     switchBackToBot: 'Помощник',
     directChannelsLabel: 'Или перейдите в удобный мессенджер:',
@@ -142,7 +182,9 @@ const WIDGET_COPY: Record<
     saveProfileBtn: 'Ок',
     inputPlaceholderBot: 'Напишіть повідомлення...',
     inputPlaceholderHuman: 'Повідомлення напряму Борису...',
-    botThinking: 'Алекс друкує',
+    botReading: 'Алекс читає повідомлення...',
+    botThinking: 'Алекс друкує відповідь',
+    seenLabel: 'Прочитано',
     onlineBadge: 'Онлайн',
     switchBackToBot: 'Помічник',
     directChannelsLabel: 'Або відкрийте у зручному месенджері:',
@@ -172,7 +214,9 @@ const WIDGET_COPY: Record<
     saveProfileBtn: 'שמור',
     inputPlaceholderBot: 'כתוב הודעה...',
     inputPlaceholderHuman: 'הודעה ישירה לבוריס...',
-    botThinking: 'אלכס מקליד',
+    botReading: 'אלכס קורא את ההודעה...',
+    botThinking: 'אלכס מקליד תשובה',
+    seenLabel: 'נקרא',
     onlineBadge: 'מחובר',
     switchBackToBot: 'עוזר חכם',
     directChannelsLabel: 'או דברו איתנו ישירות ב:',
@@ -232,7 +276,7 @@ export const VisitorLiveChatWidget: React.FC<VisitorLiveChatWidgetProps> = ({
   });
 
   const [inputText, setInputText] = useState('');
-  const [isBotTyping, setIsBotTyping] = useState(false);
+  const [typingPhase, setTypingPhase] = useState<'idle' | 'reading' | 'typing'>('idle');
   const [unreadAdminReplies, setUnreadAdminReplies] = useState(0);
   const [visitorNameInput, setVisitorNameInput] = useState(
     session.visitorName !== 'Website Visitor' ? session.visitorName : ''
@@ -240,6 +284,8 @@ export const VisitorLiveChatWidget: React.FC<VisitorLiveChatWidgetProps> = ({
   const [visitorContactInput, setVisitorContactInput] = useState(session.visitorContact || '');
   const [profileSavedToast, setProfileSavedToast] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
+
+  const isBotBusy = typingPhase !== 'idle';
 
   useEffect(() => {
     setChannels(loadSavedContactChannels());
@@ -312,7 +358,7 @@ export const VisitorLiveChatWidget: React.FC<VisitorLiveChatWidgetProps> = ({
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
       }, 80);
     }
-  }, [isOpen, session.messages.length, isBotTyping]);
+  }, [isOpen, session.messages.length, typingPhase]);
 
   const persistAndBroadcastSession = async (nextSession: VisitorChatSessionRecord) => {
     setSession(nextSession);
@@ -419,9 +465,16 @@ export const VisitorLiveChatWidget: React.FC<VisitorLiveChatWidgetProps> = ({
 
     await persistAndBroadcastSession(updatedWithUserMsg);
 
-    // If currently in Smart Concierge mode, fetch natural human-like response
+    // Realistic Human-Like Reading -> Typing Cadence in Smart Concierge Mode
     if (updatedWithUserMsg.mode === 'bot') {
-      setIsBotTyping(true);
+      setTypingPhase('reading');
+      const startTimestamp = Date.now();
+
+      // Switch from "reading..." to "typing a reply..." after a natural 420ms beat
+      const phaseTimer = window.setTimeout(() => {
+        setTypingPhase((current) => (current === 'reading' ? 'typing' : current));
+      }, 420);
+
       try {
         const resp = await fetch('/api/visitor-bot', {
           method: 'POST',
@@ -435,6 +488,14 @@ export const VisitorLiveChatWidget: React.FC<VisitorLiveChatWidgetProps> = ({
         });
         const data = await resp.json();
         const botReplyText = data?.reply || copy.humanGreetingMsg;
+
+        // Ensure a realistic human typing duration (1.1s to 1.85s depending on reply length)
+        setTypingPhase('typing');
+        const targetDurationMs = Math.min(1850, Math.max(1150, botReplyText.length * 9));
+        const elapsedMs = Date.now() - startTimestamp;
+        if (elapsedMs < targetDurationMs) {
+          await new Promise((resolve) => setTimeout(resolve, targetDurationMs - elapsedMs));
+        }
 
         const botMsg: VisitorChatMessageRecord = {
           id: `vmsg_bot_${Date.now()}`,
@@ -452,6 +513,7 @@ export const VisitorLiveChatWidget: React.FC<VisitorLiveChatWidgetProps> = ({
         };
         await persistAndBroadcastSession(afterBotSession);
       } catch {
+        await new Promise((resolve) => setTimeout(resolve, 950));
         const botMsg: VisitorChatMessageRecord = {
           id: `vmsg_bot_${Date.now()}`,
           visitorId: session.visitorId,
@@ -466,7 +528,8 @@ export const VisitorLiveChatWidget: React.FC<VisitorLiveChatWidgetProps> = ({
         };
         await persistAndBroadcastSession(afterBotSession);
       } finally {
-        setIsBotTyping(false);
+        window.clearTimeout(phaseTimer);
+        setTypingPhase('idle');
       }
     }
   };
@@ -488,19 +551,15 @@ export const VisitorLiveChatWidget: React.FC<VisitorLiveChatWidgetProps> = ({
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.94 }}
             transition={{ duration: 0.26, ease: [0.16, 1, 0.3, 1] }}
-            className="mb-3.5 w-[calc(100vw-2rem)] sm:w-[400px] max-h-[84svh] rounded-[28px] bg-[#16171b] border border-white/15 shadow-[0_28px_80px_rgba(0,0,0,0.6)] overflow-hidden flex flex-col text-white"
+            className="mb-3.5 w-[calc(100vw-2rem)] sm:w-[405px] max-h-[84svh] rounded-[28px] bg-[#16171b] border border-white/15 shadow-[0_28px_80px_rgba(0,0,0,0.6)] overflow-hidden flex flex-col text-white"
           >
-            {/* Messenger Top Profile Bar (iMessage / Telegram Pro style) */}
+            {/* Messenger Top Profile Bar with Official BryTech 'B' Monogram */}
             <div className="px-4 py-3.5 bg-[#1f2128] border-b border-white/10 flex items-center justify-between gap-3">
               <div className="flex items-center gap-3 min-w-0">
-                {/* Avatar with live green status dot */}
-                <div className="relative w-11 h-11 rounded-full overflow-hidden border-2 border-[#0071e3] shrink-0 bg-[#1d1d1f] shadow-md">
-                  <img
-                    src={FOUNDER_AVATAR_URL}
-                    alt="Boris Brygin"
-                    className="w-full h-full object-cover object-[center_18%] contrast-[1.06] saturate-[0.90]"
-                  />
-                  <span className="absolute bottom-0 right-0 w-3 h-3 rounded-full bg-emerald-400 ring-2 ring-[#1f2128]" />
+                {/* 'B' Logo Mark with live green status dot */}
+                <div className="relative shrink-0">
+                  <BryTechMonogramAvatar size="md" isTyping={isBotBusy} />
+                  <span className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full bg-emerald-400 ring-2 ring-[#1f2128]" />
                 </div>
 
                 <div className="min-w-0">
@@ -510,10 +569,37 @@ export const VisitorLiveChatWidget: React.FC<VisitorLiveChatWidgetProps> = ({
                     </h4>
                   </div>
                   <div className="flex items-center gap-1.5 mt-0.5">
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                    <p className="text-[11px] text-emerald-300/90 font-medium truncate">
-                      {session.mode === 'bot' ? copy.botSubtitle : copy.humanSubtitle}
-                    </p>
+                    {isBotBusy ? (
+                      <>
+                        <span className="flex items-center gap-0.5">
+                          <motion.span
+                            animate={{ opacity: [0.3, 1, 0.3] }}
+                            transition={{ duration: 1, repeat: Infinity, delay: 0 }}
+                            className="w-1.5 h-1.5 rounded-full bg-[#38bdf8]"
+                          />
+                          <motion.span
+                            animate={{ opacity: [0.3, 1, 0.3] }}
+                            transition={{ duration: 1, repeat: Infinity, delay: 0.2 }}
+                            className="w-1.5 h-1.5 rounded-full bg-[#38bdf8]"
+                          />
+                          <motion.span
+                            animate={{ opacity: [0.3, 1, 0.3] }}
+                            transition={{ duration: 1, repeat: Infinity, delay: 0.4 }}
+                            className="w-1.5 h-1.5 rounded-full bg-[#38bdf8]"
+                          />
+                        </span>
+                        <p className="text-[11px] text-[#38bdf8] font-medium truncate">
+                          {typingPhase === 'reading' ? copy.botReading : `${copy.botThinking}...`}
+                        </p>
+                      </>
+                    ) : (
+                      <>
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                        <p className="text-[11px] text-emerald-300/90 font-medium truncate">
+                          {session.mode === 'bot' ? copy.botSubtitle : copy.humanSubtitle}
+                        </p>
+                      </>
+                    )}
                   </div>
                 </div>
               </div>
@@ -646,27 +732,24 @@ export const VisitorLiveChatWidget: React.FC<VisitorLiveChatWidgetProps> = ({
                 </span>
               </div>
 
-              {session.messages.map((msg) => {
+              {session.messages.map((msg, idx) => {
                 const isVisitor = msg.senderRole === 'visitor';
                 const isAdmin = msg.senderRole === 'admin';
+                const isLastMessage = idx === session.messages.length - 1;
                 return (
                   <motion.div
                     key={msg.id}
-                    initial={{ opacity: 0, y: 6 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.18 }}
+                    initial={{ opacity: 0, y: 8, scale: 0.98 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
                     className={`flex items-end gap-2 ${
                       isVisitor ? 'justify-end' : 'justify-start'
                     }`}
                   >
-                    {/* Incoming Avatar */}
+                    {/* Incoming 'B' Logo Monogram Avatar */}
                     {!isVisitor && (
-                      <div className="w-7 h-7 rounded-full overflow-hidden border border-white/15 shrink-0 mb-0.5 bg-[#1d1d1f]">
-                        <img
-                          src={FOUNDER_AVATAR_URL}
-                          alt={msg.senderName}
-                          className="w-full h-full object-cover object-[center_18%] contrast-[1.06] saturate-[0.90]"
-                        />
+                      <div className="mb-0.5 shrink-0">
+                        <BryTechMonogramAvatar size="sm" />
                       </div>
                     )}
 
@@ -688,41 +771,74 @@ export const VisitorLiveChatWidget: React.FC<VisitorLiveChatWidgetProps> = ({
                       <div className="whitespace-pre-line break-words">{msg.text}</div>
                       <div
                         className={`flex items-center justify-end gap-1 mt-1 text-[10px] ${
-                          isVisitor ? 'text-white/75' : 'text-white/40'
+                          isVisitor ? 'text-white/80' : 'text-white/40'
                         }`}
                       >
                         <span>{msg.sentAtIso}</span>
-                        {isVisitor && <CheckCheck className="w-3.5 h-3.5 text-sky-200" />}
+                        {isVisitor && (
+                          <span className="inline-flex items-center gap-0.5 text-sky-200 font-medium">
+                            <CheckCheck className="w-3.5 h-3.5" />
+                            {isLastMessage && isBotBusy && (
+                              <span className="text-[9.5px] ml-0.5">{copy.seenLabel}</span>
+                            )}
+                          </span>
+                        )}
                       </div>
                     </div>
                   </motion.div>
                 );
               })}
 
-              {/* Human-Like 3-Dot Messenger Typing Bubble */}
-              {isBotTyping && (
-                <motion.div
-                  initial={{ opacity: 0, y: 6 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="flex items-end gap-2 justify-start"
-                >
-                  <div className="w-7 h-7 rounded-full overflow-hidden border border-white/15 shrink-0 bg-[#1d1d1f]">
-                    <img
-                      src={FOUNDER_AVATAR_URL}
-                      alt="Typing"
-                      className="w-full h-full object-cover object-[center_18%]"
-                    />
-                  </div>
-                  <div className="bg-[#21232b] border border-white/10 rounded-2xl rounded-bl-xs px-4 py-3 flex items-center gap-2">
-                    <span className="text-[11px] text-white/60">{copy.botThinking}</span>
-                    <span className="flex items-center gap-1">
-                      <span className="w-1.5 h-1.5 rounded-full bg-[#68b5ff] animate-bounce [animation-delay:-0.25s]" />
-                      <span className="w-1.5 h-1.5 rounded-full bg-[#68b5ff] animate-bounce [animation-delay:-0.12s]" />
-                      <span className="w-1.5 h-1.5 rounded-full bg-[#68b5ff] animate-bounce" />
-                    </span>
-                  </div>
-                </motion.div>
-              )}
+              {/* Realistic Multi-Stage Human Typing Indicator Animation */}
+              <AnimatePresence>
+                {isBotBusy && (
+                  <motion.div
+                    key="realistic-typing-indicator"
+                    initial={{ opacity: 0, y: 10, scale: 0.94 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 6, scale: 0.94 }}
+                    transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
+                    className="flex items-end gap-2 justify-start pt-0.5"
+                  >
+                    <div className="mb-0.5 shrink-0">
+                      <BryTechMonogramAvatar size="sm" isTyping />
+                    </div>
+
+                    <div className="bg-[#21232b] border border-[#0071e3]/35 rounded-2xl rounded-bl-xs px-4 py-3 shadow-[0_8px_24px_rgba(0,0,0,0.3)] flex items-center gap-3">
+                      {/* Fluid Wave-Animated 3 Messenger Dots */}
+                      <div className="flex items-center gap-1.5 h-4 px-0.5">
+                        {[0, 1, 2].map((dotIndex) => (
+                          <motion.span
+                            key={dotIndex}
+                            animate={{
+                              y: [0, -5, 0],
+                              scale: [0.85, 1.2, 0.85],
+                              opacity: [0.45, 1, 0.45],
+                            }}
+                            transition={{
+                              duration: 0.9,
+                              repeat: Infinity,
+                              ease: 'easeInOut',
+                              delay: dotIndex * 0.16,
+                            }}
+                            className="w-2 h-2 rounded-full bg-gradient-to-tr from-[#0071e3] to-[#68b5ff] block shadow-[0_0_8px_rgba(104,181,255,0.6)]"
+                          />
+                        ))}
+                      </div>
+
+                      <motion.span
+                        key={typingPhase}
+                        initial={{ opacity: 0, x: -4 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ duration: 0.18 }}
+                        className="text-[11.5px] font-medium text-white/70"
+                      >
+                        {typingPhase === 'reading' ? copy.botReading : `${copy.botThinking}...`}
+                      </motion.span>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
 
               {/* Quick Conversation Starters */}
               {session.mode === 'bot' && !visitorHasInteractedWithBot && (
@@ -741,7 +857,7 @@ export const VisitorLiveChatWidget: React.FC<VisitorLiveChatWidgetProps> = ({
               )}
 
               {/* Natural Handoff Pill after interacting */}
-              {session.mode === 'bot' && visitorHasInteractedWithBot && !isBotTyping && (
+              {session.mode === 'bot' && visitorHasInteractedWithBot && !isBotBusy && (
                 <motion.div
                   initial={{ opacity: 0, y: 6 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -778,7 +894,7 @@ export const VisitorLiveChatWidget: React.FC<VisitorLiveChatWidgetProps> = ({
               />
               <button
                 type="submit"
-                disabled={!inputText.trim() || isBotTyping}
+                disabled={!inputText.trim() || isBotBusy}
                 className="w-10 h-10 rounded-full bg-[#0071e3] hover:bg-[#0077ed] disabled:opacity-40 text-white flex items-center justify-center shrink-0 transition-all cursor-pointer shadow-md"
                 aria-label="Send message"
               >
@@ -789,7 +905,7 @@ export const VisitorLiveChatWidget: React.FC<VisitorLiveChatWidgetProps> = ({
         )}
       </AnimatePresence>
 
-      {/* Messenger Floating Launcher Button (Follows Scroll in Bottom-Right) */}
+      {/* Messenger Floating Launcher Button with Official BryTech 'B' Logo Mark */}
       <motion.button
         type="button"
         onClick={() => setIsOpen((prev) => !prev)}
@@ -798,20 +914,16 @@ export const VisitorLiveChatWidget: React.FC<VisitorLiveChatWidgetProps> = ({
         className="group relative flex items-center gap-3 p-2 sm:pr-5 sm:pl-2.5 sm:py-2 rounded-full bg-[#16171b]/95 backdrop-blur-xl text-white border border-white/15 hover:border-[#0071e3] shadow-[0_16px_40px_rgba(0,0,0,0.4)] transition-all cursor-pointer"
         aria-label={copy.launcherLabel}
       >
-        {/* Human Avatar + Messenger Badge */}
-        <div className="relative w-12 h-12 rounded-full p-0.5 bg-gradient-to-tr from-[#0071e3] to-[#38bdf8] shrink-0">
-          <div className="w-full h-full rounded-full overflow-hidden bg-[#1d1d1f] flex items-center justify-center">
-            {isOpen ? (
+        {/* Official 'B' Monogram Mark + Live Status Dot */}
+        <div className="relative w-11 h-11 flex items-center justify-center shrink-0">
+          {isOpen ? (
+            <div className="w-11 h-11 rounded-xl bg-white/10 border border-white/15 flex items-center justify-center">
               <X className="w-5 h-5 text-white" />
-            ) : (
-              <img
-                src={FOUNDER_AVATAR_URL}
-                alt="BryTech Messenger"
-                className="w-full h-full object-cover object-[center_18%] contrast-[1.06] saturate-[0.90]"
-              />
-            )}
-          </div>
-          <span className="absolute bottom-0 right-0 w-3.5 h-3.5 rounded-full bg-emerald-400 ring-2 ring-[#16171b]" />
+            </div>
+          ) : (
+            <BryTechMonogramAvatar size="md" isTyping={isBotBusy} />
+          )}
+          <span className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full bg-emerald-400 ring-2 ring-[#16171b]" />
         </div>
 
         {/* Desktop Text Label */}
