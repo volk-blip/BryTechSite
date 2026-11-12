@@ -6,3 +6,7 @@ coverage/
 *.log
 .env*
 !.env.example
+
+# local tooling
+.taste-skill/
+package-lock.json

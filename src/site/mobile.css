@@ -1,0 +1,36 @@
+/* =====================================================================
+   Mobile and tablet fixes (QA pass at 360 / 390 / 768)
+   ===================================================================== */
+
+/* the Systems page head stacks: words first, then the hub diagram */
+@media (max-width: 1023px) {
+  .split--head { grid-template-columns: 1fr; gap: 40px; }
+  .split--head .vframe { height: 380px; }
+}
+@media (max-width: 639px) {
+  .split--head .vframe { height: 320px; }
+}
+
+/* home hero on a phone: the live feed is the story, the KPI tiles step aside */
+@media (max-width: 639px) {
+  .ops__kpis { display: none; }
+  .ops .askbar { display: none; }
+  .ops { gap: 10px; }
+  .ops .feed__item { padding: 8px; font-size: 12px; }
+  .hframe--ops { min-height: 250px; }
+}
+
+/* touch targets of at least 44px */
+.brand { min-height: 44px; }
+.foot__legal a { display: inline-flex; align-items: center; min-height: 44px; }
+.foot__col a { display: inline-flex; align-items: center; min-height: 36px; }
+
+/* footer wordmark stays white */
+.foot__col .brand { color: var(--white); }
+
+/* the four greetings overlap a little, so the tile is never empty */
+@keyframes word {
+  0% { opacity: 0; filter: blur(8px); transform: translateY(10px); }
+  4%, 27% { opacity: 1; filter: blur(0); transform: none; }
+  31%, 100% { opacity: 0; filter: blur(8px); transform: translateY(-10px); }
+}

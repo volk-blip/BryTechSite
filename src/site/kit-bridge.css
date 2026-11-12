@@ -1,0 +1,145 @@
+/* Bridge: maps the taste-skill kit tokens (moments, scenes, diagrams, effects) onto the BryTech palette.
+   Unlayered on purpose, so it sits at the same level as the kit's own stylesheets. */
+:root {
+  --bg: #181824;
+  --surface: #26253b;
+  --ink: #ffffff;
+  --muted: #8e8da0;
+  --accent: #ff4a36;
+  --accent-ink: #16131f;
+  --card: #26253b;
+  --line: rgba(247, 247, 255, 0.1);
+  --line-strong: rgba(247, 247, 255, 0.2);
+
+  --p-bg: #181824;
+  --p-surface: #1d1c2c;
+  --p-ink: #000000;
+  --p-muted: #8e8da0;
+  --p-accent: #ff4a36;
+  --p-inv-bg: #000000;
+  --p-inv-surface: #26253b;
+  --p-inv-ink: #ffffff;
+
+  /* the "lit ground" the kit stands UI on: a lifted plum on this dark page */
+  --ground-bg: #2a2944;
+  --ground-surface: #2a2944;
+  --ground-ink: #ffffff;
+  --ground-muted: #b9b8c9;
+
+  --font-display: 'Inter Tight', 'Heebo', ui-sans-serif, system-ui, sans-serif;
+  --font-text: 'Inter', 'Heebo', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: ui-monospace, 'SF Mono', Menlo, monospace;
+  --display-weight: 600;
+
+  --s-1: 4px; --s-2: 8px; --s-3: 12px; --s-4: 16px; --s-5: 24px;
+  --s-6: 32px; --s-7: 48px; --s-8: 64px; --s-9: 96px; --s-10: 128px;
+  --r-sm: 8px; --r-md: 12px; --r-lg: 20px; --r-btn: 100px;
+  --gutter: 24px;
+  --container: 1440px;
+  --pad: 24px;
+  --section: 120px;
+  --nav: 72px;
+  --nav-h: 72px;
+  --t-lead: 19px;
+  --t-body: 16px;
+  --t-small: 14px;
+  --t-stat: clamp(40px, 4vw, 56px);
+
+  --fx-bg: #181824;
+  --fx-surface: #26253b;
+  --fx-ink: #ffffff;
+  --fx-muted: #8e8da0;
+  --fx-accent: #ff4a36;
+  --fx-accent-ink: #16131f;
+  --ui-font: var(--font-text);
+  --ui-radius: 12px;
+}
+@media (min-width: 640px) { :root { --pad: 48px; } }
+@media (min-width: 1280px) { :root { --pad: 64px; } }
+
+/* ---------- the big scene: powers-of-ten pull-back ---------- */
+html [data-big-scene='powers-of-ten-pullback'] { background: #181824; }
+html [data-big-scene='powers-of-ten-pullback'] .pb__ground {
+  background:
+    radial-gradient(60% 70% at 72% 40%, rgba(255, 74, 54, 0.16), transparent 70%),
+    radial-gradient(70% 80% at 20% 80%, rgba(83, 86, 118, 0.45), transparent 70%),
+    #23223a;
+}
+html [data-big-scene='powers-of-ten-pullback'] .pb__device {
+  background: #0b0b12;
+  box-shadow: 0 0 0 1px rgba(247, 247, 255, 0.08), 0 40px 90px -30px rgba(0, 0, 0, 0.7), 0 0 120px -30px rgba(255, 74, 54, 0.25);
+}
+html [data-big-scene='powers-of-ten-pullback'] .pb__screen { background: #000; container-type: size; }
+html [data-big-scene='powers-of-ten-pullback'] .pb__copy h2 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: clamp(34px, 3.9vw, 52px);
+  line-height: 1.04;
+  letter-spacing: -0.02em;
+  color: #fff;
+  margin: 0;
+}
+html [data-big-scene='powers-of-ten-pullback'] .pb__copy .t-label { font-size: 13px; font-weight: 500; margin: 0; color: var(--ground-muted); }
+html [data-big-scene='powers-of-ten-pullback'] .pb__copy > p { margin: 0; color: #c9c8d6; }
+html[lang='he'] [data-big-scene='powers-of-ten-pullback'] .pb__copy h2 { letter-spacing: 0; }
+
+/* ---------- moments ---------- */
+html [data-moment='pinned-chapters'] .mo-pc__text h2 { margin: 0; }
+html [data-moment='pinned-chapters'] .mo-pc__step h3 { margin: 0; font-size: 20px; }
+html [data-moment='pinned-chapters'] .mo-pc__step p { margin: 0; color: #a3a3a7; }
+html [data-moment='pinned-chapters'].is-live .mo-pc__visuals { border-radius: 20px; overflow: hidden; background: #23223a; }
+html [data-moment='pinned-chapters'] .mo-pc__visual.mo-pc__visual--lit {
+  background:
+    radial-gradient(70% 80% at 80% 10%, rgba(255, 74, 54, 0.14), transparent 70%),
+    radial-gradient(70% 80% at 10% 90%, rgba(83, 86, 118, 0.5), transparent 70%),
+    #23223a;
+}
+html [data-moment='pinned-chapters'] .mo-pc__visual > img { object-position: 50% 22%; }
+html [dir='rtl'] [data-moment='pinned-chapters'] .mo-pc__step { padding-left: 0; padding-right: var(--s-5); border-left: 0; border-right: 2px solid var(--line); }
+html [dir='rtl'] [data-moment='pinned-chapters'].is-live .mo-pc__step.is-on { border-right-color: var(--accent); }
+
+html [data-moment='letters-assemble'] .mo-la__type {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: clamp(48px, 9vw, 136px);
+  line-height: 0.95;
+  letter-spacing: -0.03em;
+  color: #fff;
+  margin: 0;
+}
+html[lang='he'] [data-moment='letters-assemble'] .mo-la__type { letter-spacing: 0; }
+html [data-moment='letters-assemble'] .mo-la__sub { margin: 28px 0 0; font-size: 19px; color: #a3a3a7; max-width: 52ch; }
+
+html [data-moment='marquee-row'] .mo-mq__track li {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: clamp(24px, 2.6vw, 36px);
+  letter-spacing: -0.02em;
+  color: #fff;
+}
+html [data-moment='marquee-row'] .mo-mq__track li:nth-child(even) { color: #535676; }
+
+/* the scene at rest sits in the page rhythm: its lit ground (inset -32px) stays inside its own section */
+html main > [data-big-scene].sc:not(.is-live) { padding-block: 96px; box-sizing: border-box; }
+@media (max-width: 639px) { html main > [data-big-scene].sc:not(.is-live) { padding-block: 72px; } }
+
+/* colour pass: the scene's ground and the pinned frames carry the spectrum */
+html [data-big-scene='powers-of-ten-pullback'] .pb__ground {
+  background:
+    radial-gradient(55% 70% at 78% 35%, rgba(255, 61, 139, 0.28), transparent 70%),
+    radial-gradient(50% 60% at 95% 90%, rgba(255, 74, 54, 0.22), transparent 70%),
+    radial-gradient(70% 80% at 12% 85%, rgba(124, 108, 255, 0.38), transparent 70%),
+    #1f1d36;
+}
+html [data-moment='pinned-chapters'] .mo-pc__visual--t1 { background: radial-gradient(70% 80% at 85% 10%, rgba(255, 74, 54, 0.32), transparent 70%), radial-gradient(70% 80% at 10% 90%, rgba(255, 61, 139, 0.26), transparent 70%), #221f38 !important; }
+html [data-moment='pinned-chapters'] .mo-pc__visual--t2 { background: radial-gradient(70% 80% at 85% 10%, rgba(79, 179, 255, 0.3), transparent 70%), radial-gradient(70% 80% at 10% 90%, rgba(124, 108, 255, 0.34), transparent 70%), #1f2038 !important; }
+html [data-moment='pinned-chapters'] .mo-pc__visual--t3 { background: radial-gradient(70% 80% at 85% 10%, rgba(45, 212, 191, 0.28), transparent 70%), radial-gradient(70% 80% at 10% 90%, rgba(255, 181, 71, 0.22), transparent 70%), #1e2232 !important; }
+html [data-moment='pinned-chapters'].is-live .mo-pc__step.is-on { border-left-color: transparent; border-image: linear-gradient(var(--coral, #ff4a36), #ff3d8b) 1; }
+
+/* mobile QA: pinned-chapters at rest shows each drawn window whole, never cropped */
+@media (max-width: 1023px) {
+  html [data-moment='pinned-chapters']:not(.is-live) .mo-pc__visual.mo-pc__visual--lit { aspect-ratio: auto; max-height: none; padding: 20px; }
+  html [data-moment='pinned-chapters']:not(.is-live) .mo-pc__visual .mini { width: 100%; }
+}
+/* diagram pause discs: a 44px touch target */
+html button.loop-pause.dg-pause { width: 44px; height: 44px; }
