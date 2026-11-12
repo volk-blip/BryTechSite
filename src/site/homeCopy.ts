@@ -2,6 +2,7 @@ import type { Language } from '../i18n/translations';
 
 export interface HomeCopy {
   chips: [string, string, string];
+  status: string;
   leads: {
     h2: string;
     lead: string;
@@ -18,6 +19,7 @@ export interface HomeCopy {
 export const HOME: Record<Language, HomeCopy> = {
   en: {
     chips: ['Booking confirmed', 'New lead from Instagram', 'Invoice paid · $120'],
+    status: 'Custom systems studio · Kyiv · Tel Aviv',
     leads: {
       h2: 'Every lead lands in one place',
       lead: 'Website forms, Instagram messages and WhatsApp and Telegram chats arrive in one inbox, next to the client’s full history.',
@@ -46,6 +48,7 @@ export const HOME: Record<Language, HomeCopy> = {
   },
   ru: {
     chips: ['Запись подтверждена', 'Новая заявка из Instagram', 'Счёт оплачен · $120'],
+    status: 'Студия кастомных систем · Киев · Тель-Авив',
     leads: {
       h2: 'Все заявки попадают в одно место',
       lead: 'Формы с сайта, сообщения в Instagram и чаты WhatsApp и Telegram приходят в один ящик рядом с полной историей клиента.',
@@ -74,6 +77,7 @@ export const HOME: Record<Language, HomeCopy> = {
   },
   uk: {
     chips: ['Запис підтверджено', 'Нова заявка з Instagram', 'Рахунок сплачено · $120'],
+    status: 'Студія кастомних систем · Київ · Тель-Авів',
     leads: {
       h2: 'Усі заявки потрапляють в одне місце',
       lead: 'Форми із сайту, повідомлення в Instagram і чати WhatsApp та Telegram приходять в одну скриньку поруч із повною історією клієнта.',
@@ -102,6 +106,7 @@ export const HOME: Record<Language, HomeCopy> = {
   },
   he: {
     chips: ['התור אושר', 'פנייה חדשה מאינסטגרם', 'חשבונית שולמה · $120'],
+    status: 'סטודיו למערכות בהתאמה אישית · קייב · תל אביב',
     leads: {
       h2: 'כל פנייה נוחתת במקום אחד',
       lead: "טפסים מהאתר, הודעות באינסטגרם וצ'אטים בוואטסאפ ובטלגרם מגיעים לתיבה אחת, לצד ההיסטוריה המלאה של הלקוח.",

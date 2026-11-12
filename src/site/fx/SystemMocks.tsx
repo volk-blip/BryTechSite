@@ -398,3 +398,23 @@ export function LiveOps({ c, m }: { c: SiteCopy; m: MockCopy }) {
     </div>
   );
 }
+
+/* ------------------------------------------------------------------ the hero's compact console */
+export function ConsoleCard({ m }: { m: MockCopy }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const on = useOnScreen(ref);
+  return (
+    <div ref={ref} className="console" role="img" aria-label={`${m.feed}: ${m.events.map((e) => e.text).join('; ')}`}>
+      <div className="dash__feed-head" aria-hidden="true">
+        <strong>{m.feed}</strong>
+        <span className="livechip">
+          <i />
+          {m.live}
+        </span>
+      </div>
+      <div aria-hidden="true">
+        <Feed m={m} active={on} limit={3} />
+      </div>
+    </div>
+  );
+}

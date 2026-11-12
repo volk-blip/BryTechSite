@@ -1,4 +1,4 @@
-import React, { memo } from 'react';
+import React, { Suspense, lazy, memo, useEffect, useRef } from 'react';
 import { ArrowRight } from 'lucide-react';
 import type { SiteCopy, PartId } from '../content';
 import { PARTS } from '../content';
@@ -19,7 +19,8 @@ import {
 } from '../Visuals';
 import { ParticleHero } from '../fx/ParticleHero';
 import { PartsAssembly } from '../fx/PartsAssembly';
-import { Dashboard, LiveOps } from '../fx/SystemMocks';
+import { ConsoleCard, Dashboard } from '../fx/SystemMocks';
+import { decode } from '../fx/motion';
 import type { MockCopy } from '../mockCopy';
 
 /*
@@ -45,33 +46,80 @@ const TONE: Record<PartId, string> = {
   finance: 'magenta',
 };
 
-const Hero = ({ c, j, m }: Props) => (
-  <section className="hero hero--collage hero--aurora" aria-labelledby="hero-title">
-    <Aurora variant="hero" />
-    <ParticleHero targetId="hero-title" runKey={j.heroH1a} />
-    <div className="wrap hero__grid">
-      <div className="hero__copy" data-enter>
-        <h1 id="hero-title" className="display display--hero is-assembling">
-          {j.heroH1a} <span className="grad">{j.heroH1b}</span>
-        </h1>
-        <p className="lead">{c.home.lead}</p>
-        <div className="hero__actions">
-          <a className="btn btn--primary" href={href('pricing')}>
-            {c.actions.primary}
-            <ArrowRight className="flip" aria-hidden="true" />
-          </a>
-          <a className="btn btn--quiet" href={href('contact')}>
-            {c.actions.secondary}
-          </a>
+/* the hero's 3D Core loads on its own (three.js), so the page paints first */
+const Core3D = lazy(() => import('../fx/Core3D'));
+
+function StatusLine({ text }: { text: string }) {
+  const ref = useRef<HTMLSpanElement>(null);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const t = window.setTimeout(() => decode(el), 250);
+    return () => clearTimeout(t);
+  }, [text]);
+  return (
+    <p className="hero__status">
+      <span className="hero__pulse" aria-hidden="true" />
+      <span ref={ref}>{text}</span>
+    </p>
+  );
+}
+
+const Hero = ({ c, j, hc, m }: Props) => {
+  const words = c.home.lead.split(' ');
+  const pills = j.proof.split(' · ');
+  return (
+    <section className="hero hero--collage hero--aurora hero--core" aria-labelledby="hero-title">
+      <Aurora variant="hero" />
+      <div className="hero__floor" aria-hidden="true">
+        <i />
+      </div>
+      <div className="hero__beam" aria-hidden="true" />
+      <ParticleHero targetId="hero-title" runKey={j.heroH1a} />
+      <div className="wrap hero__grid">
+        <div className="hero__copy" data-enter>
+          <StatusLine text={hc.status} />
+          <h1 id="hero-title" className="display display--hero is-assembling">
+            {j.heroH1a} <span className="grad">{j.heroH1b}</span>
+          </h1>
+          <p className="lead lead--words">
+            {words.map((w, i) => (
+              <span key={i} style={{ ['--i' as string]: i }}>
+                {w}{' '}
+              </span>
+            ))}
+          </p>
+          <div className="hero__actions">
+            <a className="btn btn--primary" href={href('pricing')}>
+              {c.actions.primary}
+              <ArrowRight className="flip" aria-hidden="true" />
+            </a>
+            <a className="btn btn--quiet" href={href('contact')}>
+              {c.actions.secondary}
+            </a>
+          </div>
+          <ul className="hero__pills">
+            {pills.map((p, i) => (
+              <li key={p} style={{ ['--i' as string]: i }}>
+                <i aria-hidden="true" />
+                {p}
+              </li>
+            ))}
+          </ul>
         </div>
-        <p className="proof">{j.proof}</p>
+        <div className="hero__visual" data-enter-stage>
+          <Suspense fallback={<div className="core core--fallback" aria-hidden="true" />}>
+            <Core3D />
+          </Suspense>
+          <FloatChips items={hc.chips} />
+          <div className="hero__console">
+            <ConsoleCard m={m} />
+          </div>
+        </div>
       </div>
-      <div className="hframe hframe--glass hframe--ops" data-enter-stage>
-        <LiveOps c={c} m={m} />
-      </div>
-    </div>
-  </section>
-);
+    </section>
+  );
+};
 
 /* Static: the scene and the moments rewrite their own DOM, so React never re-renders them. */
 const SystemScene = memo(({ c, j, m }: { c: SiteCopy; j: JourneyCopy; m: MockCopy }) => (

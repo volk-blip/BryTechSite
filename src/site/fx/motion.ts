@@ -14,7 +14,7 @@ const CYR = 'БГДЖЗИЛПФЦЧШЩЭЮЯ0123456789#%&*+/';
 const HEB = 'אבגדהוזחטיכלמנסעפצקרשת0123456789#';
 const poolFor = (ch: string) => (/[֐-׿]/.test(ch) ? HEB : /[Ѐ-ӿ]/.test(ch) ? CYR : LATIN);
 
-function decode(el: HTMLElement) {
+export function decode(el: HTMLElement) {
   const node = el.firstChild;
   if (!node || node.nodeType !== Node.TEXT_NODE || el.childElementCount > 0) return;
   const final = node.nodeValue || '';

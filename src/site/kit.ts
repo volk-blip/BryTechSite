@@ -44,42 +44,45 @@ export function useKit(rootId: string, key: string) {
     const diagrams: { destroy?: () => void }[] = [];
     const mods: { sc?: Mod; fx?: Mod } = {};
 
-    (async () => {
-      try {
-        if (root.querySelector('[data-big-scene]')) {
-          mods.sc = await load('/kit/scenes/scenes.js');
-          if (!alive) return;
-          await mods.sc.mountAll(root);
-        }
-        if (root.querySelector('[data-moment]')) {
-          const mo = await load('/kit/moments/moments.js');
-          if (!alive) return;
-          await mo.mountAll(root);
-        }
-        if (root.querySelector('[data-diagram]')) {
-          const [m] = await Promise.all([load('/kit/diagrams/diagram.js'), linkCss('/kit/diagrams/diagram.css')]);
-          const dg = m.default;
-          if (!alive) return;
-          for (const el of root.querySelectorAll<HTMLElement>('[data-diagram]')) {
-            try {
-              const raw = el.querySelector('script[type="application/json"]')?.textContent || el.dataset.diagram || '';
-              diagrams.push(await dg.mount(el, JSON.parse(raw)));
-            } catch (err) {
-              console.warn('diagram failed', err);
-            }
+    // each part mounts on its own, so a slow one (fonts, a heavy frame) never holds the others back
+    const fail = (part: string) => (err: unknown) => {
+      console.warn(`kit: ${part} failed; it shows its finished state`, err);
+      document.documentElement.classList.add('mo-safe', 'sc-safe');
+    };
+    if (root.querySelector('[data-big-scene]')) {
+      (async () => {
+        mods.sc = await load('/kit/scenes/scenes.js');
+        if (alive) await mods.sc.mountAll(root);
+      })().catch(fail('scene'));
+    }
+    if (root.querySelector('[data-moment]')) {
+      (async () => {
+        const mo = await load('/kit/moments/moments.js');
+        if (alive) await mo.mountAll(root);
+      })().catch(fail('moments'));
+    }
+    if (root.querySelector('[data-diagram]')) {
+      (async () => {
+        const [m] = await Promise.all([load('/kit/diagrams/diagram.js'), linkCss('/kit/diagrams/diagram.css')]);
+        const dg = m.default;
+        if (!alive) return;
+        for (const el of root.querySelectorAll<HTMLElement>('[data-diagram]')) {
+          try {
+            const raw = el.querySelector('script[type="application/json"]')?.textContent || el.dataset.diagram || '';
+            diagrams.push(await dg.mount(el, JSON.parse(raw)));
+          } catch (err) {
+            console.warn('diagram failed', err);
           }
         }
-        if (root.querySelector('[data-fx]')) {
-          const fx = (await load('/kit/effects/fx.js')).default;
-          mods.fx = fx;
-          if (!alive) return;
-          await fx.mountAll(root);
-        }
-      } catch (err) {
-        console.warn('kit: a part failed to load; the page shows its finished state', err);
-        document.documentElement.classList.add('mo-safe', 'sc-safe');
-      }
-    })();
+      })().catch(fail('diagrams'));
+    }
+    if (root.querySelector('[data-fx]')) {
+      (async () => {
+        const fx = (await load('/kit/effects/fx.js')).default;
+        mods.fx = fx;
+        if (alive) await fx.mountAll(root);
+      })().catch(fail('effects'));
+    }
 
     return () => {
       alive = false;
