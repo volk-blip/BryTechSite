@@ -9,6 +9,7 @@ import { HOME } from './site/homeCopy';
 import { MOCK, ABOUT } from './site/mockCopy';
 import { useKit } from './site/kit';
 import { useMotion, useScrollProgress } from './site/fx/motion';
+import { useMobileScroll } from './site/fx/mobileScroll';
 import { SiteFooter, SiteNav } from './site/Chrome';
 import { Home } from './site/pages/Home';
 import { Systems } from './site/pages/Systems';
@@ -39,6 +40,7 @@ export function App() {
   const j = JOURNEY[lang];
   useKit('main', `${route}-${lang}`);
   useMotion('main', `${route}-${lang}`);
+  useMobileScroll('main', `${route}-${lang}`);
   useScrollProgress();
   const dir = lang === 'he' ? 'rtl' : 'ltr';
 

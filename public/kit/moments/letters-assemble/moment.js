@@ -46,3 +46,6 @@ export default function (root, opts, lib) {
   }, { mode: 'view', margin: '30% 0px' });
   return { destroy() { s.destroy(); chars.forEach(c => { c.style.transform = ''; c.style.opacity = ''; }); root.classList.remove('is-live'); } };
 }
+
+// BryTech: run on phones too (client asked for scroll motion on mobile); reduced motion still rests
+export const phone = true;

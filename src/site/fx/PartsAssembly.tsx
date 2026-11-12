@@ -49,6 +49,8 @@ function splitHeading(t: string): [string, string] {
 export function PartsAssembly({ c, hc }: { c: SiteCopy; hc: HomeCopy }) {
   const ref = useRef<HTMLElement>(null);
   const [live, setLive] = useState(false);
+  // phones and tablets: each part flies in by its own position as you scroll
+  const [mobileMotion, setMobileMotion] = useState(false);
   const [locked, setLocked] = useState(6);
   const [l1, l2] = splitHeading(c.home.partsH2);
 
@@ -59,7 +61,10 @@ export function PartsAssembly({ c, hc }: { c: SiteCopy; hc: HomeCopy }) {
       window.matchMedia('(min-height: 640px)'),
       window.matchMedia('(prefers-reduced-motion: no-preference)'),
     ];
-    const decide = () => setLive(mqs.every((m) => m.matches));
+    const decide = () => {
+      setLive(mqs.every((m) => m.matches));
+      setMobileMotion(!mqs[0].matches && mqs[2].matches);
+    };
     decide();
     mqs.forEach((m) => m.addEventListener('change', decide));
     return () => mqs.forEach((m) => m.removeEventListener('change', decide));
@@ -69,6 +74,43 @@ export function PartsAssembly({ c, hc }: { c: SiteCopy; hc: HomeCopy }) {
     const el = ref.current;
     if (!el) return;
     const cards = [...el.querySelectorAll<HTMLElement>('.asm__card')];
+    if (!live && mobileMotion) {
+      // mobile choreography: card k follows its own position; the sticky readout counts the locked parts
+      let raf = 0;
+      let lastLocked = -1;
+      const update = () => {
+        raf = 0;
+        const vh = window.innerHeight;
+        const sr = el.getBoundingClientRect();
+        el.style.setProperty('--p', clamp((vh * 0.6 - sr.top) / (vh * 0.6)).toFixed(3));
+        let n = 0;
+        cards.forEach((card) => {
+          const r = card.getBoundingClientRect();
+          const k = expo(clamp((vh * 0.98 - r.top) / (vh * 0.48)));
+          card.style.setProperty('--k', k.toFixed(4));
+          if (k > 0.985) {
+            n++;
+            card.classList.add('is-locked');
+          } else card.classList.remove('is-locked');
+        });
+        if (n !== lastLocked) {
+          lastLocked = n;
+          setLocked(n);
+        }
+        el.classList.toggle('is-whole', n === cards.length);
+      };
+      const on = () => {
+        if (!raf) raf = requestAnimationFrame(update);
+      };
+      update();
+      window.addEventListener('scroll', on, { passive: true });
+      window.addEventListener('resize', on);
+      return () => {
+        cancelAnimationFrame(raf);
+        window.removeEventListener('scroll', on);
+        window.removeEventListener('resize', on);
+      };
+    }
     if (!live) {
       el.style.setProperty('--p', '1');
       cards.forEach((card) => card.style.setProperty('--k', '1'));
@@ -110,12 +152,12 @@ export function PartsAssembly({ c, hc }: { c: SiteCopy; hc: HomeCopy }) {
       window.removeEventListener('scroll', on);
       window.removeEventListener('resize', on);
     };
-  }, [live]);
+  }, [live, mobileMotion]);
 
   return (
     <section
       ref={ref}
-      className={`asm${live ? ' is-live' : ' is-whole'}`}
+      className={`asm${live ? ' is-live' : mobileMotion ? ' is-mobile' : ' is-whole'}`}
       id="parts"
       aria-labelledby="parts-title"
     >
@@ -144,6 +186,16 @@ export function PartsAssembly({ c, hc }: { c: SiteCopy; hc: HomeCopy }) {
           </div>
 
           <div className="asm__sys">
+            <div className="asm__mhud" aria-hidden="true">
+              <b className="num">{locked}</b>
+              <span>/6</span>
+              <span className="asm__ticks">
+                {PARTS.map((p, i) => (
+                  <i key={p.id} className={i < locked ? 'is-on' : undefined} data-tone={TONE[p.id]} />
+                ))}
+              </span>
+              <span className="asm__mhud-label">{hc.asm.connected}</span>
+            </div>
             <div className="asm__frame" aria-hidden="true">
               <div className="asm__bar">
                 <span className="asm__dots">

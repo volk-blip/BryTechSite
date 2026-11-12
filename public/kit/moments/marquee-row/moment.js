@@ -42,3 +42,6 @@ export default function (root, opts, lib) {
   io.observe(root);
   return { destroy() { ro.disconnect(); io.disconnect(); clone.remove(); pause.remove(); rail.replaceWith(track); root.classList.remove('is-live', 'is-on', 'is-paused'); } };
 }
+
+// BryTech: run on phones too (client asked for scroll motion on mobile); reduced motion still rests
+export const phone = true;

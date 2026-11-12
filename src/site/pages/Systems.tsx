@@ -34,6 +34,7 @@ const HeadVisual = memo(({ c, j }: Props) => {
       { label: 'Instagram', icon: 'instagram' },
     ],
     motion: { cycle: 3.2 },
+    phoneLoop: true,
     size: 'band',
   };
   return (
@@ -62,6 +63,7 @@ const Flow = memo(({ j }: { j: JourneyCopy }) => {
       { label: j.lanes.outs[2], icon: 'ui:bell', done: true },
     ],
     motion: { cycle: 3.6 },
+    phoneLoop: true,
   };
   return (
     <div className="panel panel--diagram">

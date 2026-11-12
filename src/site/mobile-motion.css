@@ -1,0 +1,91 @@
+/* =====================================================================
+   Phone & tablet scroll motion (web-design-skills · field-io recipe)
+   Driven by src/site/fx/mobileScroll.ts; only under 1024px with motion allowed.
+   ===================================================================== */
+@media (max-width: 1023px) and (prefers-reduced-motion: no-preference) {
+  /* scrubbed blocks: rise, un-tilt, sharpen and light up as they travel up the screen */
+  html.m-scroll [data-scrub] {
+    --qq: calc(1 - var(--q, 1));
+    transform:
+      perspective(900px)
+      translate3d(0, calc(var(--qq) * 64px), 0)
+      rotateX(calc(var(--qq) * 18deg))
+      rotateZ(calc(var(--qq) * var(--tilt, 1) * 2.5deg))
+      scale(calc(0.9 + 0.1 * var(--q, 1)));
+    transform-origin: 50% 100%;
+    opacity: calc(0.08 + 0.92 * var(--q, 1));
+    filter: blur(calc(var(--qq) * 5px)) saturate(calc(0.6 + 0.4 * var(--q, 1)));
+    will-change: transform, opacity;
+  }
+  /* entry groups are scrubbed instead of played once */
+  html.m-scroll [data-enter-group] > * { transition: none; }
+
+  /* the hero folds away as you leave it */
+  html.m-scroll .hero__copy,
+  html.m-scroll .about-hero__copy,
+  html.m-scroll .page-head .wrap {
+    transform: translate3d(0, calc(var(--out, 0) * -70px), 0) scale(calc(1 - var(--out, 0) * 0.06));
+    opacity: calc(1 - var(--out, 0) * 0.9);
+    filter: blur(calc(var(--out, 0) * 6px));
+    transform-origin: 0 0;
+  }
+  html.m-scroll .hero .hframe {
+    transform: perspective(900px) rotateX(calc(var(--out, 0) * 22deg)) scale(calc(1 - var(--out, 0) * 0.1));
+    transform-origin: 50% 0;
+    opacity: calc(1 - var(--out, 0) * 0.6);
+  }
+  html.m-scroll .about-hero__globe { transform: scale(calc(1 + var(--out, 0) * 0.25)) rotate(calc(var(--out, 0) * -8deg)); opacity: calc(1 - var(--out, 0) * 0.7); }
+
+  /* photographs drift inside their frames */
+  html.m-scroll .photo img,
+  html.m-scroll .founder__photo img,
+  html.m-scroll .person__photo img {
+    transform: translate3d(0, calc(var(--par, 0) * 7%), 0) scale(1.14);
+    transition: none;
+  }
+
+  /* how a project runs: the step's line fills as you read it */
+  html.m-scroll [data-moment='pinned-chapters'] .mo-pc__step { position: relative; }
+  html.m-scroll [data-moment='pinned-chapters'] .mo-pc__step::before {
+    content: '';
+    position: absolute; top: 0; inset-inline-start: -2px;
+    width: 2px; height: calc(var(--s, 0) * 100%);
+    background: linear-gradient(var(--coral), var(--magenta), var(--cyan));
+    box-shadow: 0 0 12px rgba(255, 61, 139, 0.6);
+    border-radius: 2px;
+  }
+  html.m-scroll [data-moment='pinned-chapters'] .mo-pc__step h3 { color: color-mix(in oklab, var(--white) calc(45% + 55% * var(--s, 0)), var(--text-2)); }
+}
+
+/* "Six parts. One system." on phones and tablets: parts fly in from alternating sides */
+.asm__mhud { display: none; }
+@media (max-width: 1023px) and (prefers-reduced-motion: no-preference) {
+  .asm.is-mobile .asm__cards { perspective: 900px; }
+  .asm.is-mobile .asm__card:nth-child(odd) { --sx: -78vw !important; --sy: 6vh !important; --sz: -220px !important; --rx: 10deg !important; --ry: 48deg !important; --rz: -10deg !important; }
+  .asm.is-mobile .asm__card:nth-child(even) { --sx: 78vw !important; --sy: 6vh !important; --sz: -220px !important; --rx: 10deg !important; --ry: -48deg !important; --rz: 10deg !important; }
+  .asm.is-mobile .asm__frame { opacity: 1; transform: none; }
+  .asm.is-mobile .asm__live, .asm.is-mobile .asm__synced { opacity: 0; transition: opacity 0.5s var(--ease-expo); }
+  .asm.is-mobile.is-whole .asm__live, .asm.is-mobile.is-whole .asm__synced { opacity: 1; }
+  /* the headline's light moves to "One system." as you scroll in */
+  .asm.is-mobile .asm__l1 { opacity: calc(1 - 0.6 * var(--p, 0)); }
+  .asm.is-mobile .asm__l2 { opacity: calc(0.25 + 0.75 * var(--p, 0)); }
+  /* a compact readout that sticks under the nav while the parts arrive */
+  .asm.is-mobile .asm__mhud {
+    position: sticky; top: calc(var(--nav-h) + 10px); z-index: 5;
+    display: flex; align-items: center; gap: 8px;
+    width: fit-content; margin: 0 auto 14px;
+    padding: 8px 14px; border-radius: 100px;
+    background: rgba(16, 15, 26, 0.88); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+    box-shadow: inset 0 0 0 1px rgba(247, 247, 255, 0.12), 0 12px 30px -12px rgba(0, 0, 0, 0.8);
+    color: var(--white); font-size: 13px;
+  }
+  .asm.is-mobile .asm__mhud b { font: 600 22px/1 var(--f-display); }
+  .asm.is-mobile .asm__mhud > span:nth-of-type(1) { color: var(--text-2); margin-inline-start: -6px; }
+  .asm.is-mobile .asm__mhud .asm__ticks i { width: 14px; height: 5px; }
+  .asm.is-mobile .asm__mhud-label { font: 500 10px/1 ui-monospace, Menlo, monospace; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-2); }
+  .asm.is-mobile .asm__sys { padding-top: 0; }
+  .asm.is-mobile .asm__frame { top: 64px; }
+  .asm.is-mobile .asm__cards { padding-top: 52px; }
+}
+
+@media (max-width: 1023px) { .asm { overflow-x: clip; } }

@@ -24,7 +24,7 @@ export default function mount(root, opts = {}) {
   let geo = null;
   const ctrl = scene(root, {
     hold: opts.hold ?? 1,
-    phone: 'rest',
+    phone: { hold: 1 }, // BryTech: the pull-back runs on phones too
     measure(ctx) {
       device.style.transform = '';
       // in the stage's own coordinates: the stage may sit below the fold when this runs

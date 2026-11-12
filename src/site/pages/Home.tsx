@@ -142,6 +142,7 @@ const Leads = memo(({ hc }: { hc: HomeCopy }) => {
     target: { label: hc.leads.target, icon: 'ui:inbox' },
     then: { label: hc.leads.then, icon: 'ui:users', meta: 'live' },
     motion: { cycle: 3.4 },
+    phoneLoop: true,
   };
   return (
     <section className="section" id="leads" aria-labelledby="leads-title">

@@ -64,3 +64,6 @@ export default function (root, opts, lib) {
   const seen = lib.once(root, run, { threshold: 0.4 });
   return { destroy() { seen.destroy(); anims.forEach(a => { try { a.cancel(); } catch { /* done */ } }); } };
 }
+
+// BryTech: run on phones too (client asked for scroll motion on mobile); reduced motion still rests
+export const phone = true;
