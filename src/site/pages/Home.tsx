@@ -20,7 +20,6 @@ import {
 import { ParticleHero } from '../fx/ParticleHero';
 import { PartsAssembly } from '../fx/PartsAssembly';
 import { Dashboard, LiveOps } from '../fx/SystemMocks';
-import { decode } from '../fx/motion';
 import type { MockCopy } from '../mockCopy';
 
 /*
@@ -96,21 +95,6 @@ function useHeroPointer(ref: React.RefObject<HTMLElement | null>) {
   }, [ref]);
 }
 
-function StatusLine({ text }: { text: string }) {
-  const ref = useRef<HTMLSpanElement>(null);
-  useEffect(() => {
-    const el = ref.current;
-    if (!el || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-    const t = window.setTimeout(() => decode(el), 250);
-    return () => clearTimeout(t);
-  }, [text]);
-  return (
-    <p className="hero__status">
-      <span className="hero__pulse" aria-hidden="true" />
-      <span ref={ref}>{text}</span>
-    </p>
-  );
-}
 
 const Silk = memo(() => (
   <div
@@ -139,7 +123,6 @@ const Hero = ({ c, j, hc, m }: Props) => {
       <ParticleHero targetId="hero-title" runKey={j.heroH1a} />
       <div className="wrap hero__grid">
         <div className="hero__copy" data-enter>
-          <StatusLine text={hc.status} />
           <h1 id="hero-title" className="display display--hero is-assembling">
             {j.heroH1a} <span className="grad">{j.heroH1b}</span>
           </h1>
