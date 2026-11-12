@@ -1,4 +1,4 @@
-import React, { Suspense, lazy, memo, useEffect, useRef } from 'react';
+import React, { memo, useEffect, useRef } from 'react';
 import { ArrowRight } from 'lucide-react';
 import type { SiteCopy, PartId } from '../content';
 import { PARTS } from '../content';
@@ -19,7 +19,7 @@ import {
 } from '../Visuals';
 import { ParticleHero } from '../fx/ParticleHero';
 import { PartsAssembly } from '../fx/PartsAssembly';
-import { ConsoleCard, Dashboard } from '../fx/SystemMocks';
+import { Dashboard, LiveOps } from '../fx/SystemMocks';
 import { decode } from '../fx/motion';
 import type { MockCopy } from '../mockCopy';
 
@@ -46,8 +46,55 @@ const TONE: Record<PartId, string> = {
   finance: 'magenta',
 };
 
-/* the hero's 3D Core loads on its own (three.js), so the page paints first */
-const Core3D = lazy(() => import('../fx/Core3D'));
+/* giant outlined words drifting behind the hero; a light that follows the pointer fills them */
+function BgType({ rows }: { rows: string[][] }) {
+  const layer = (fill: boolean) => (
+    <div className={`bgtype__layer${fill ? ' bgtype__layer--fill' : ''}`}>
+      {rows.map((r, i) => (
+        <div key={i} className={`bgtype__row bgtype__row--${i}`}>
+          <div className="bgtype__track">
+            {[...r, ...r, ...r].map((w, k) => (
+              <span key={k}>{w}</span>
+            ))}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+  return (
+    <div className="bgtype" aria-hidden="true">
+      {layer(false)}
+      {layer(true)}
+    </div>
+  );
+}
+
+/* the hero's pointer position, for the light over the giant words */
+function useHeroPointer(ref: React.RefObject<HTMLElement | null>) {
+  useEffect(() => {
+    const el = ref.current;
+    if (!el || window.matchMedia('(pointer: coarse)').matches) return;
+    let raf = 0;
+    let x = 0, y = 0;
+    const on = (e: PointerEvent) => {
+      const r = el.getBoundingClientRect();
+      x = e.clientX - r.left;
+      y = e.clientY - r.top;
+      if (!raf)
+        raf = requestAnimationFrame(() => {
+          raf = 0;
+          el.style.setProperty('--mx', `${x}px`);
+          el.style.setProperty('--my', `${y}px`);
+          el.classList.add('has-pointer');
+        });
+    };
+    el.addEventListener('pointermove', on, { passive: true });
+    return () => {
+      el.removeEventListener('pointermove', on);
+      cancelAnimationFrame(raf);
+    };
+  }, [ref]);
+}
 
 function StatusLine({ text }: { text: string }) {
   const ref = useRef<HTMLSpanElement>(null);
@@ -65,15 +112,29 @@ function StatusLine({ text }: { text: string }) {
   );
 }
 
+const Silk = memo(() => (
+  <div
+    className="hero__silk"
+    aria-hidden="true"
+    data-fx="silk-folds"
+    data-fx-seed="19"
+    data-fx-palette='{"bg":"#14121f","surface":"#1d1a2e","accent":"#6b2c5c","ink":"#ffffff","muted":"#8e8da0"}'
+    data-fx-params='{"tone":1,"scale":1.15,"folds":0.75,"sheen":0.75,"speed":0.09,"angle":28,"calm":0.65,"calmX":0.22,"calmY":0.5}'
+  />
+));
+
 const Hero = ({ c, j, hc, m }: Props) => {
+  const ref = useRef<HTMLElement>(null);
+  useHeroPointer(ref);
   const words = c.home.lead.split(' ');
   const pills = j.proof.split(' · ');
+  const partNames = (['website', 'booking', 'crm', 'bots', 'portal', 'finance'] as PartId[]).map((id) => c.parts[id].name);
+  const rows = [partNames, ['WhatsApp', 'Telegram', 'Instagram', 'Stripe', 'Google Sheets', m.company]];
   return (
-    <section className="hero hero--collage hero--aurora hero--core" aria-labelledby="hero-title">
+    <section ref={ref} className="hero hero--collage hero--aurora hero--type" aria-labelledby="hero-title">
+      <Silk />
       <Aurora variant="hero" />
-      <div className="hero__floor" aria-hidden="true">
-        <i />
-      </div>
+      <BgType rows={rows} />
       <div className="hero__beam" aria-hidden="true" />
       <ParticleHero targetId="hero-title" runKey={j.heroH1a} />
       <div className="wrap hero__grid">
@@ -107,14 +168,8 @@ const Hero = ({ c, j, hc, m }: Props) => {
             ))}
           </ul>
         </div>
-        <div className="hero__visual" data-enter-stage>
-          <Suspense fallback={<div className="core core--fallback" aria-hidden="true" />}>
-            <Core3D />
-          </Suspense>
-          <FloatChips items={hc.chips} />
-          <div className="hero__console">
-            <ConsoleCard m={m} />
-          </div>
+        <div className="hframe hframe--glass hframe--ops" data-enter-stage>
+          <LiveOps c={c} m={m} />
         </div>
       </div>
     </section>

@@ -7,6 +7,7 @@
 @import "./site/mobile.css" layer(components);
 @import "./site/mobile-motion.css" layer(components);
 @import "./site/hero-core.css" layer(components);
+@import "./site/hero-type.css" layer(components);
 
 /* Custom cursor hiding (used only inside the client portal when enabled) */
 @media (min-width: 769px) and (pointer: fine) {
